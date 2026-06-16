@@ -1,0 +1,642 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Setting;
+use App\Models\Booking;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Crypt;
+use App\Mail\BookingStatusMail;
+
+class NotificationService
+{
+    /**
+     * Send a notification for a newly created booking to the WA Group.
+     */
+    public function sendNewBookingNotification(Booking $booking, $totalRecurringWeeks = 1)
+    {
+        $settings = Setting::whereIn('key', ['WA_GATEWAY_URL', 'WA_GROUP_ID'])->pluck('value', 'key');
+        $gatewayUrl = $settings['WA_GATEWAY_URL'] ?? null;
+        $groupId = $settings['WA_GROUP_ID'] ?? null;
+
+        if (!$gatewayUrl || !$groupId) {
+            Log::info("WhatsApp Gateway or Group ID is not configured. Skipping new booking notification.");
+            return;
+        }
+
+        $labName = optional($booking->laboratory)->name;
+        $unitName = optional($booking->businessUnit)->name;
+        $subUnitName = optional($booking->subBusinessUnit)->name;
+        $instansi = $subUnitName ? "{$unitName} ({$subUnitName})" : $unitName;
+        
+        $date = \Carbon\Carbon::parse($booking->date)->format('d M Y');
+        $time = \Carbon\Carbon::parse($booking->start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($booking->end_time)->format('H:i');
+
+        $trackUrl = url('/track/' . $booking->tracking_code);
+
+        $message = "INFO: PEMINJAMAN BARU\n\n";
+        $message .= "Ada permintaan peminjaman Labkom baru:\n\n";
+        $message .= "PIC: {$booking->pic_name} ({$instansi})\n";
+        $message .= "Labkom: {$labName}\n";
+        $message .= "Tanggal: {$date}\n";
+        $message .= "Waktu: {$time}\n";
+        $message .= "WhatsApp: {$booking->whatsapp}\n";
+        $message .= "Email: {$booking->email}\n";
+        $message .= "Keperluan: {$booking->purpose}\n";
+        
+        if ($totalRecurringWeeks > 1) {
+            $message .= "Pemesanan Rutin: Ya (Total {$totalRecurringWeeks} Minggu berturut-turut)\n\n";
+        } else {
+            $message .= "\n";
+        }
+
+        $message .= "Cek Status: {$trackUrl}\n\n";
+        $message .= "Mohon tim Infrastructure segera meninjau di Dashboard.";
+
+        try {
+            Http::timeout(5)->post(rtrim($gatewayUrl, '/') . '/send', [
+                'phone' => $groupId,
+                'message' => $message
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Failed to send WA New Booking Notification: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Send a notification when a user requests a booking change.
+     */
+    public function sendChangeRequestNotification(\App\Models\BookingChangeRequest $changeRequest)
+    {
+        $settings = Setting::whereIn('key', ['WA_GATEWAY_URL', 'WA_GROUP_ID'])->pluck('value', 'key');
+        $gatewayUrl = $settings['WA_GATEWAY_URL'] ?? null;
+        $groupId = $settings['WA_GROUP_ID'] ?? null;
+
+        if (!$gatewayUrl || !$groupId) {
+            Log::info("WhatsApp Gateway or Group ID is not configured. Skipping change request notification.");
+            return;
+        }
+
+        $booking = $changeRequest->booking;
+        $labName = optional($booking->laboratory)->name;
+        
+        $typeLabel = '';
+        $detailText = '';
+        if ($changeRequest->type === 'cancellation') {
+            $typeLabel = 'Pembatalan';
+            $detailText = "User ingin membatalkan peminjaman ini.";
+        } elseif ($changeRequest->type === 'reschedule') {
+            $typeLabel = 'Perubahan Jadwal';
+            $date = \Carbon\Carbon::parse($changeRequest->requested_date)->format('d M Y');
+            $time = \Carbon\Carbon::parse($changeRequest->requested_start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($changeRequest->requested_end_time)->format('H:i');
+            $detailText = "Jadwal Baru: {$date} | {$time}";
+        } elseif ($changeRequest->type === 'relocation') {
+            $typeLabel = 'Pindah Labkom';
+            $newLab = optional($changeRequest->requestedLaboratory)->name;
+            $detailText = "Pindah ke Labkom: {$newLab}";
+        }
+
+        $message = "⚠️ *PENGAJUAN PERUBAHAN BOOKING*\n\n";
+        $message .= "Pemohon: *{$booking->pic_name}*\n";
+        $message .= "Lab Awal: {$labName}\n";
+        $message .= "Jenis Pengajuan: *{$typeLabel}*\n";
+        $message .= "Alasan: {$changeRequest->reason}\n\n";
+        $message .= "Detail Pengajuan:\n{$detailText}\n\n";
+        $message .= "Mohon tim IT Infrastructure segera meninjau pengajuan ini di menu Permintaan Perubahan.";
+
+        try {
+            Http::timeout(5)->post(rtrim($gatewayUrl, '/') . '/send', [
+                'phone' => $groupId,
+                'message' => $message
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Failed to send WA Change Request Notification: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Send a notification when a change request is approved or rejected.
+     */
+    public function sendChangeRequestProcessedNotification(\App\Models\BookingChangeRequest $changeRequest, \App\Models\User $admin)
+    {
+        $settings = Setting::whereIn('key', ['WA_GATEWAY_URL', 'WA_GROUP_ID'])->pluck('value', 'key');
+        $gatewayUrl = $settings['WA_GATEWAY_URL'] ?? null;
+        $groupId = $settings['WA_GROUP_ID'] ?? null;
+
+        $booking = $changeRequest->booking;
+        $statusText = $changeRequest->status === 'approved' ? '*DISETUJUI*' : '*DITOLAK*';
+        
+        $typeLabel = '';
+        $detailText = '';
+        if ($changeRequest->type === 'cancellation') {
+            $typeLabel = 'Pembatalan';
+            $detailText = "-";
+        } elseif ($changeRequest->type === 'reschedule') {
+            $typeLabel = 'Perubahan Jadwal';
+            $date = \Carbon\Carbon::parse($changeRequest->requested_date)->format('d M Y');
+            $time = \Carbon\Carbon::parse($changeRequest->requested_start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($changeRequest->requested_end_time)->format('H:i');
+            $detailText = "{$date} | {$time}";
+        } elseif ($changeRequest->type === 'relocation') {
+            $typeLabel = 'Pindah Labkom';
+            $newLab = optional($changeRequest->requestedLaboratory)->name;
+            $detailText = "Pindah ke Labkom: {$newLab}";
+        }
+
+        $trackUrl = url('/track/' . $booking->tracking_code);
+
+        // WA Message for Group
+        $messageGroup = "⚠️ *HASIL PENGAJUAN PERUBAHAN BOOKING*\n\n";
+        $messageGroup .= "Pengajuan perubahan untuk *{$booking->pic_name}* telah {$statusText} oleh *{$admin->name}*.\n\n";
+        $messageGroup .= "Jenis: {$typeLabel}\n";
+        $messageGroup .= "Detail: {$detailText}\n";
+        $messageGroup .= "Catatan Admin: " . ($changeRequest->admin_note ?? '-') . "\n\n";
+        $messageGroup .= "Cek Detail: {$trackUrl}";
+
+        // WA Message for User
+        $messageUser = "Halo *{$booking->pic_name}*,\n\n";
+        $messageUser .= "Pengajuan perubahan booking Anda telah {$statusText}.\n\n";
+        $messageUser .= "Jenis: {$typeLabel}\n";
+        $messageUser .= "Detail: {$detailText}\n";
+        $messageUser .= "Diproses oleh: {$admin->name}\n";
+        if (!empty($changeRequest->admin_note)) {
+            $messageUser .= "Catatan Admin: {$changeRequest->admin_note}\n";
+        }
+        $messageUser .= "\nCek Detail Terbaru: {$trackUrl}\n";
+        $messageUser .= "Informasi ini juga telah dikirim ke email {$booking->email}.";
+
+        if ($gatewayUrl) {
+            try {
+                if ($groupId) {
+                    Http::timeout(5)->post(rtrim($gatewayUrl, '/') . '/send', [
+                        'phone' => $groupId,
+                        'message' => $messageGroup
+                    ]);
+                }
+                if ($booking->whatsapp) {
+                    Http::timeout(5)->post(rtrim($gatewayUrl, '/') . '/send', [
+                        'phone' => $booking->whatsapp,
+                        'message' => $messageUser
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error("Failed to send WA Processed Notification: " . $e->getMessage());
+            }
+        }
+
+        // Send Email to User
+        $mailSettings = Setting::pluck('value', 'key');
+        $this->configureMail($mailSettings);
+
+        if (!empty($mailSettings['MAIL_HOST'])) {
+            try {
+                $mail = Mail::to($booking->email);
+                
+                if (!empty($mailSettings['MAIL_CC_ADDRESSES'])) {
+                    $ccList = array_map('trim', explode(',', $mailSettings['MAIL_CC_ADDRESSES']));
+                    $mail->cc($ccList);
+                }
+
+                $mail->send(new \App\Mail\ChangeRequestProcessedMail($changeRequest, $admin));
+            } catch (\Exception $e) {
+                Log::error("Failed to send Processed Email Notification: " . $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * Send notification for a booking status update (Accepted/Rejected).
+     * Sends WA to Group and Email to User.
+     */
+    public function sendBookingStatusNotification(Booking $booking)
+    {
+        // 1. WhatsApp Group Notification
+        $settings = Setting::pluck('value', 'key');
+        $gatewayUrl = $settings['WA_GATEWAY_URL'] ?? null;
+        $groupId = $settings['WA_GROUP_ID'] ?? null;
+
+        $labName = optional($booking->laboratory)->name;
+        $unitName = optional($booking->businessUnit)->name;
+        $subUnitName = optional($booking->subBusinessUnit)->name;
+        $instansi = $subUnitName ? "{$unitName} ({$subUnitName})" : $unitName;
+
+        $date = \Carbon\Carbon::parse($booking->date)->format('d M Y');
+        $time = \Carbon\Carbon::parse($booking->start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($booking->end_time)->format('H:i');
+        $statusMap = [
+            'accepted' => '*DISETUJUI*',
+            'rejected' => '*DITOLAK*',
+            'completed' => '*SELESAI*',
+            'cancelled' => '*DIBATALKAN*'
+        ];
+        $statusText = $statusMap[$booking->status] ?? '*DIPERBARUI*';
+        $adminName = $booking->handled_by ?? 'Admin';
+        $trackUrl = url('/track/' . $booking->tracking_code);
+
+        $dataTerkini = "*Detail Pemesanan:*\n";
+        $dataTerkini .= "Instansi: {$instansi}\n";
+        $dataTerkini .= "Labkom: {$labName}\n";
+        $dataTerkini .= "Tanggal: {$date}\n";
+        $dataTerkini .= "Waktu: {$time}\n";
+        $dataTerkini .= "Keperluan: {$booking->purpose}\n";
+
+        $dataTerkini .= "Keadaan Bersih: " . ($booking->is_clean ? "Ya" : "Tidak") . "\n";
+        if (!empty($booking->report_note)) {
+            $dataTerkini .= "Catatan Laporan: {$booking->report_note}\n";
+        }
+        $pdfUrl = url('/track/' . $booking->tracking_code . '/pdf');
+        $dataTerkini .= "\n*Informasi Detail Laporan Anda Lihat Di:*\n{$pdfUrl}\n";
+
+        if ($gatewayUrl) {
+            $message = "⚠️ *STATUS BOOKING: {$statusText}*\n\n";
+            $message .= "Peminjaman Labkom untuk *{$booking->pic_name}* telah diperbarui.\n\n";
+            $message .= "Diproses Oleh: {$adminName}\n";
+            if (in_array($booking->status, ['rejected', 'cancelled']) && !empty($booking->rejection_reason)) {
+                $message .= "Alasan: {$booking->rejection_reason}\n";
+            }
+            $message .= "\n" . $dataTerkini;
+            $message .= "\nCek Detail: {$trackUrl}";
+
+            try {
+                // Send to Group
+                if ($groupId) {
+                    Http::timeout(5)->post(rtrim($gatewayUrl, '/') . '/send', [
+                        'phone' => $groupId,
+                        'message' => $message
+                    ]);
+                }
+                
+                // Send to Borrower
+                if ($booking->whatsapp) {
+                    $borrowerMessage = "Halo *{$booking->pic_name}*,\n\n";
+                    
+                    if ($booking->status === 'completed') {
+                        $borrowerMessage .= "Peminjaman Labkom Anda telah dinyatakan *SELESAI*.\nTerima kasih telah menggunakan fasilitas Labkom. Kami harap fasilitas yang kami sediakan dapat membantu kegiatan Anda dengan baik.\n\n";
+                    } else if ($booking->status === 'cancelled') {
+                        $borrowerMessage .= "Permintaan peminjaman Labkom Anda telah *DIBATALKAN*.\n\n";
+                    } else {
+                        $borrowerMessage .= "Permintaan peminjaman Labkom Anda telah diproses dengan status: {$statusText}\n\n";
+                    }
+                    
+                    if (in_array($booking->status, ['rejected', 'cancelled']) && !empty($booking->rejection_reason)) {
+                        $borrowerMessage .= "Alasan: {$booking->rejection_reason}\n\n";
+                    }
+
+                    $borrowerMessage .= $dataTerkini;
+                    $borrowerMessage .= "Diproses Oleh: {$adminName}\n\n";
+                    $borrowerMessage .= "Cek Status Terkini: {$trackUrl}\n";
+                    $borrowerMessage .= "Syarat & Ketentuan (ToS): " . url('/tos') . "\n";
+                    $borrowerMessage .= "\nInformasi ini juga telah dikirim ke email {$booking->email}";
+
+                    Http::timeout(5)->post(rtrim($gatewayUrl, '/') . '/send', [
+                        'phone' => $booking->whatsapp,
+                        'message' => $borrowerMessage
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error("Failed to send WA Status Notification: " . $e->getMessage());
+            }
+        }
+
+        // 2. Email Notification
+        $this->configureMail($settings);
+
+        if ($settings->has('MAIL_HOST') && $settings->has('MAIL_USERNAME')) {
+            try {
+                $mail = Mail::to($booking->email);
+                
+                if (!empty($settings['MAIL_CC_ADDRESSES'])) {
+                    $ccList = array_map('trim', explode(',', $settings['MAIL_CC_ADDRESSES']));
+                    $mail->cc($ccList);
+                }
+
+                $mail->send(new BookingStatusMail($booking));
+            } catch (\Exception $e) {
+                Log::error("Failed to send Email Status Notification: " . $e->getMessage());
+            }
+        } else {
+            Log::info("SMTP Configuration is incomplete. Skipping Email notification.");
+        }
+    }
+
+    /**
+     * Send notification when a booking is edited.
+     */
+    public function sendBookingEditedNotification(Booking $booking, \App\Models\User $admin, array $changes, bool $notifyPic = false)
+    {
+        $settings = Setting::pluck('value', 'key');
+        $gatewayUrl = $settings['WA_GATEWAY_URL'] ?? null;
+        $groupId = $settings['WA_GROUP_ID'] ?? null;
+
+        $labName = optional($booking->laboratory)->name;
+        $unitName = optional($booking->businessUnit)->name;
+        $subUnitName = optional($booking->subBusinessUnit)->name;
+        $instansi = $subUnitName ? "{$unitName} ({$subUnitName})" : $unitName;
+        $date = \Carbon\Carbon::parse($booking->date)->format('d M Y');
+        $time = \Carbon\Carbon::parse($booking->start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($booking->end_time)->format('H:i');
+        $trackUrl = url('/track/' . $booking->tracking_code);
+
+        // 1. WhatsApp Notification to Group
+        if ($gatewayUrl && $groupId) {
+            $changesText = implode("\n- ", $changes);
+            $messageGroup = "⚠️ *PERUBAHAN DATA BOOKING*\n\n";
+            $messageGroup .= "Data booking milik *{$booking->pic_name}* telah diubah oleh *{$admin->name}*.\n\n";
+            $messageGroup .= "*Detail Perubahan:*\n- {$changesText}\n\n";
+            $messageGroup .= "*Data Terkini:*\n";
+            $messageGroup .= "Instansi: {$instansi}\n";
+            $messageGroup .= "Labkom: {$labName}\n";
+            $messageGroup .= "Tanggal: {$date}\n";
+            $messageGroup .= "Waktu: {$time}\n";
+            $messageGroup .= "Keperluan: {$booking->purpose}\n";
+            
+            $messageGroup .= "Keadaan Bersih: " . ($booking->is_clean ? "Ya" : "Tidak") . "\n";
+            if (!empty($booking->report_note)) {
+                $messageGroup .= "Catatan Laporan: {$booking->report_note}\n";
+            }
+            $pdfUrl = url('/track/' . $booking->tracking_code . '/pdf');
+            $messageGroup .= "\n*Informasi Detail Laporan Anda Lihat Di:*\n{$pdfUrl}\n";
+            $messageGroup .= "\nCek Detail: {$trackUrl}";
+
+            try {
+                Http::post(rtrim($gatewayUrl, '/') . '/send', [
+                    'phone' => $groupId,
+                    'message' => $messageGroup,
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Failed to send Booking Edited WA Notification to Group: " . $e->getMessage());
+            }
+        }
+        
+        // 2. Notification to PIC
+        if ($notifyPic) {
+            // WA to PIC
+            if ($gatewayUrl && $booking->whatsapp) {
+                $messagePic = "Halo *{$booking->pic_name}*,\n\n";
+                $messagePic .= "Terdapat perubahan pada detail peminjaman Labkom Anda yang diproses oleh tim Admin. Berikut adalah data yang diperbarui:\n\n";
+                $messagePic .= "- " . implode("\n- ", $changes) . "\n\n";
+                $messagePic .= "*Detail Pemesanan Terkini:*\n";
+                $messagePic .= "Instansi: {$instansi}\n";
+                $messagePic .= "Labkom: {$labName}\n";
+                $messagePic .= "Tanggal: {$date}\n";
+                $messagePic .= "Waktu: {$time}\n";
+                $messagePic .= "Keperluan: {$booking->purpose}\n\n";
+                
+                $messagePic .= "Keadaan Bersih: " . ($booking->is_clean ? "Ya" : "Tidak") . "\n";
+                if (!empty($booking->report_note)) {
+                    $messagePic .= "Catatan Laporan: {$booking->report_note}\n";
+                }
+                $pdfUrl = url('/track/' . $booking->tracking_code . '/pdf');
+                $messagePic .= "\n*Informasi Detail Laporan Anda Lihat Di:*\n{$pdfUrl}\n";
+                
+                if ($booking->status === 'completed') {
+                    $messagePic .= "Peminjaman Labkom Anda telah dinyatakan *SELESAI*.\nTerima kasih telah menggunakan fasilitas Labkom. Kami harap fasilitas yang kami sediakan dapat membantu kegiatan Anda dengan baik.\n\n";
+                }
+
+                $messagePic .= "Cek Status Terkini: {$trackUrl}\n";
+                $messagePic .= "Terima kasih.";
+
+                try {
+                    Http::post(rtrim($gatewayUrl, '/') . '/send', [
+                        'phone' => $booking->whatsapp,
+                        'message' => $messagePic,
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error("Failed to send Booking Edited WA Notification to PIC: " . $e->getMessage());
+                }
+            }
+
+            // Email to PIC
+            $this->configureMail($settings);
+            if (!empty($settings['MAIL_HOST'])) {
+                try {
+                    $mail = Mail::to($booking->email);
+                    if (!empty($settings['MAIL_CC_ADDRESSES'])) {
+                        $ccList = array_map('trim', explode(',', $settings['MAIL_CC_ADDRESSES']));
+                        $mail->cc($ccList);
+                    }
+                    $mail->send(new \App\Mail\BookingEditedMail($booking, $admin, $changes));
+                } catch (\Exception $e) {
+                    Log::error("Failed to send Booking Edited Email Notification: " . $e->getMessage());
+                }
+            }
+        }
+    }
+
+    /**
+     * Send notification when a booking is deleted.
+     */
+    public function sendBookingDeletedNotification(array $bookingData, \App\Models\User $admin)
+    {
+        $settings = Setting::pluck('value', 'key');
+        $gatewayUrl = $settings['WA_GATEWAY_URL'] ?? null;
+        $groupId = $settings['WA_GROUP_ID'] ?? null;
+
+        if ($gatewayUrl && $groupId) {
+            $message = "🗑️ *PENGHAPUSAN DATA BOOKING*\n\n";
+            $message .= "Data booking berikut telah *DIHAPUS* oleh *{$admin->name}*:\n\n";
+            $message .= "PIC: {$bookingData['pic_name']}\n";
+            $message .= "Labkom: {$bookingData['lab_name']}\n";
+            $message .= "Tanggal: {$bookingData['date']}\n";
+            $message .= "Waktu: {$bookingData['time']}";
+
+            try {
+                Http::post(rtrim($gatewayUrl, '/') . '/send', [
+                    'phone' => $groupId,
+                    'message' => $message,
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Failed to send Booking Deleted WA Notification: " . $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * Send notification when an Admin's data is updated.
+     */
+    public function sendAdminUpdatedNotification(\App\Models\User $updatedUser, \App\Models\User $changerAdmin, array $changes)
+    {
+        $settings = Setting::pluck('value', 'key');
+        
+        // WhatsApp Notification
+        $gatewayUrl = $settings['WA_GATEWAY_URL'] ?? null;
+        $groupId = $settings['WA_GROUP_ID'] ?? null;
+
+        if ($gatewayUrl && $groupId) {
+            $changesText = implode("\n- ", $changes);
+            $message = "⚠️ *Pembaruan Data Admin*\n\n";
+            $message .= "Data akun Admin *{$updatedUser->name}* telah diperbarui oleh *{$changerAdmin->name}*.\n\n";
+            $message .= "*Detail Perubahan:*\n- {$changesText}";
+
+            try {
+                Http::post("{$gatewayUrl}/send", [
+                    'phone' => $groupId,
+                    'message' => $message,
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Failed to send Admin Updated WA Notification: " . $e->getMessage());
+            }
+        } else {
+            Log::info("WhatsApp Gateway or Group ID is not configured. Skipping Admin Updated WA notification.");
+        }
+
+        // Email Notification
+        $this->configureMail($settings);
+
+        if (!empty($settings['MAIL_HOST'])) {
+            try {
+                Mail::to($updatedUser->email)->send(new \App\Mail\AdminUpdatedMail($updatedUser, $changerAdmin, $changes));
+            } catch (\Exception $e) {
+                Log::error("Failed to send Admin Updated Email Notification: " . $e->getMessage());
+            }
+        } else {
+            Log::info("SMTP Configuration is incomplete. Skipping Admin Updated Email notification.");
+        }
+    }
+
+    /**
+     * Send notification when a new Admin is added.
+     */
+    public function sendNewAdminNotification(\App\Models\User $newAdmin, \App\Models\User $creatorAdmin, $rawPassword = null)
+    {
+        $settings = Setting::pluck('value', 'key');
+        
+        // WhatsApp Notification
+        $gatewayUrl = $settings['WA_GATEWAY_URL'] ?? null;
+        $groupId = $settings['WA_GROUP_ID'] ?? null;
+
+        if ($gatewayUrl && $groupId) {
+            $message = "⚠️ *Penambahan Admin Baru*\n\n";
+            $message .= "*{$creatorAdmin->name}* baru saja menambahkan *{$newAdmin->name}* sebagai Admin baru.";
+
+            try {
+                Http::post("{$gatewayUrl}/send", [
+                    'phone' => $groupId,
+                    'message' => $message,
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Failed to send New Admin WA Notification: " . $e->getMessage());
+            }
+        } else {
+            Log::info("WhatsApp Gateway or Group ID is not configured. Skipping New Admin WA notification.");
+        }
+
+        // Email Notification
+        $this->configureMail($settings);
+
+        if (!empty($settings['MAIL_HOST'])) {
+            try {
+                Mail::to($newAdmin->email)->send(new \App\Mail\NewAdminMail($newAdmin, $creatorAdmin, $rawPassword));
+            } catch (\Exception $e) {
+                Log::error("Failed to send New Admin Email Notification: " . $e->getMessage());
+            }
+        } else {
+            Log::info("SMTP Configuration is incomplete. Skipping New Admin Email notification.");
+        }
+    }
+
+    /**
+     * Send notification when an Admin is deleted.
+     */
+    public function sendAdminDeletedNotification(string $deletedAdminName, \App\Models\User $changerAdmin)
+    {
+        $settings = Setting::pluck('value', 'key');
+        
+        // WhatsApp Notification
+        $gatewayUrl = $settings['WA_GATEWAY_URL'] ?? null;
+        $groupId = $settings['WA_GROUP_ID'] ?? null;
+
+        if ($gatewayUrl && $groupId) {
+            $message = "⚠️ *Penghapusan Admin*\n\n";
+            if ($changerAdmin->name === $deletedAdminName) {
+                $message .= "*{$changerAdmin->name}* baru saja menghapus akunnya sendiri.";
+            } else {
+                $message .= "*{$changerAdmin->name}* baru saja menghapus akun Admin *{$deletedAdminName}*.";
+            }
+
+            try {
+                Http::post("{$gatewayUrl}/send", [
+                    'phone' => $groupId,
+                    'message' => $message,
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Failed to send Admin Deleted WA Notification: " . $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * Send notification when master data is added, updated, or deleted.
+     */
+    public function sendMasterDataNotification(string $type, string $action, string $dataName, \App\Models\User $admin)
+    {
+        $settings = \App\Models\Setting::pluck('value', 'key');
+        
+        $gatewayUrl = $settings['WA_GATEWAY_URL'] ?? null;
+        $groupId = $settings['WA_GROUP_ID'] ?? null;
+
+        if ($gatewayUrl && $groupId) {
+            $emoji = '📝';
+            if ($action === 'ditambahkan') $emoji = '⚠️';
+            if ($action === 'dihapus') $emoji = '🗑️';
+
+            $message = "{$emoji} *Pembaruan Data {$type}*\n\n";
+            $message .= "*{$admin->name}* baru saja melakukan tindakan berikut:\n";
+            $message .= "Tindakan: *{$action}*\n";
+            $message .= "Data: *{$dataName}*";
+
+            try {
+                \Illuminate\Support\Facades\Http::post("{$gatewayUrl}/send", [
+                    'phone' => $groupId,
+                    'message' => $message,
+                ]);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to send Master Data WA Notification: " . $e->getMessage());
+            }
+        }
+    }
+
+    public function sendAccountDeletedEmail(string $email, string $name)
+    {
+        $settings = \App\Models\Setting::pluck('value', 'key');
+        $this->configureMail($settings);
+
+        if (!empty($settings['MAIL_HOST'])) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($email)->send(new \App\Mail\AccountDeletedMail($name));
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to send Account Deleted Email: " . $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * Dynamically configure Laravel Mailer based on Settings table.
+     */
+    private function configureMail($settings)
+    {
+        $password = $settings['MAIL_PASSWORD'] ?? env('MAIL_PASSWORD');
+        try {
+            if (!empty($settings['MAIL_PASSWORD'])) {
+                $password = Crypt::decryptString($settings['MAIL_PASSWORD']);
+            }
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            // Jika gagal decrypt, berarti masih menggunakan plain text lama
+            $password = $settings['MAIL_PASSWORD'];
+        }
+
+        config([
+            'mail.default' => 'smtp',
+            'mail.mailers.smtp.host' => $settings['MAIL_HOST'] ?? env('MAIL_HOST', '127.0.0.1'),
+            'mail.mailers.smtp.port' => $settings['MAIL_PORT'] ?? env('MAIL_PORT', 2525),
+            'mail.mailers.smtp.username' => $settings['MAIL_USERNAME'] ?? env('MAIL_USERNAME'),
+            'mail.mailers.smtp.password' => $password,
+            'mail.mailers.smtp.encryption' => $settings['MAIL_ENCRYPTION'] ?? env('MAIL_ENCRYPTION', 'tls'),
+            'mail.from.address' => $settings['MAIL_FROM_ADDRESS'] ?? env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+            'mail.from.name' => $settings['MAIL_FROM_NAME'] ?? env('MAIL_FROM_NAME', 'Techub Notification'),
+        ]);
+
+        app()->forgetInstance('mail.manager');
+        app()->forgetInstance('mailer');
+        Mail::clearResolvedInstances();
+    }
+}

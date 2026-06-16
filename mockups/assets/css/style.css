@@ -1,0 +1,123 @@
+:root {
+  /* Corporate Light Theme (Default) */
+  --bs-primary: #002B5C;
+  --bs-secondary: #0A4B91;
+  --bs-info: #1F6FEB; /* Accent */
+  --bs-body-bg: #F5F7FA;
+  --bs-body-color: #1E293B;
+  --card-bg: #FFFFFF;
+  --navbar-bg: #FFFFFF;
+  --border-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-bs-theme="dark"] {
+  /* Corporate Dark Theme */
+  --bs-primary: #0A4B91;
+  --bs-secondary: #002B5C;
+  --bs-info: #1F6FEB;
+  --bs-body-bg: #0F172A;
+  --bs-body-color: #F8FAFC;
+  --card-bg: #1E293B;
+  --navbar-bg: #001C3D;
+  --border-color: rgba(255, 255, 255, 0.1);
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.navbar {
+  background-color: var(--navbar-bg) !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  transition: background-color 0.3s ease;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  border-radius: 0.75rem;
+  transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover.interactive-card {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.form-control, .form-select {
+  background-color: var(--card-bg);
+  color: var(--bs-body-color);
+  border-color: var(--border-color);
+}
+
+.form-control:focus, .form-select:focus {
+  background-color: var(--card-bg);
+  color: var(--bs-body-color);
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.25rem rgba(31, 111, 235, 0.25);
+}
+
+.btn-primary {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+}
+
+.btn-primary:hover {
+  background-color: var(--bs-secondary);
+  border-color: var(--bs-secondary);
+}
+
+.btn-outline-primary {
+  color: var(--bs-primary);
+  border-color: var(--bs-primary);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--bs-primary);
+  color: #fff;
+}
+
+/* Custom styles for sidebar (Admin) */
+.sidebar {
+  min-height: calc(100vh - 56px);
+  background-color: var(--card-bg);
+  border-right: 1px solid var(--border-color);
+}
+
+.sidebar .nav-link {
+  color: var(--bs-body-color);
+  padding: 0.8rem 1.5rem;
+  border-radius: 0.5rem;
+  margin: 0.2rem 1rem;
+  transition: all 0.2s;
+}
+
+.sidebar .nav-link:hover, .sidebar .nav-link.active {
+  background-color: rgba(31, 111, 235, 0.1);
+  color: var(--bs-info);
+  font-weight: 600;
+}
+
+/* Utils */
+.text-muted-custom {
+  color: #64748B !important;
+}
+
+[data-bs-theme="dark"] .text-muted-custom {
+  color: #94A3B8 !important;
+}
+
+.gradient-bg {
+  background: linear-gradient(135deg, var(--bs-primary), var(--bs-secondary));
+  color: white;
+}
+
+/* Invert logo color in dark theme */
+[data-bs-theme="dark"] img[src="Techub-Logo.png"] {
+  filter: brightness(0) invert(1);
+}

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labkom Booking System | Techub</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/style.css?v=2">
+    <!-- Custom Theme JS (in head to prevent flash) -->
+    <script src="assets/js/theme.js"></script>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center fw-bold" href="index.html">
+                <img src="Techub-Logo.png" alt="Techub Logo" height="40" class="me-2">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active fw-medium" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="check-labkom.html">Cek Ketersediaan</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <button id="theme-toggle" class="btn btn-link text-body p-0 me-3" title="Toggle Theme">
+                        <i id="theme-icon" class="bi bi-sun-fill fs-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container py-5">
+
+        <!-- Header Section -->
+        <div class="row justify-content-center text-center mb-5">
+            <div class="col-lg-8">
+                <h1 class="fw-bold mb-3">Peminjaman Laboratorium Komputer</h1>
+                <!-- <p class="text-muted-custom fs-5">Lakukan pemesanan ruangan labkom secara mudah dan cepat.</p> -->
+                <div class="alert alert-warning d-inline-flex align-items-center rounded-pill px-4 py-2 mt-3 shadow-sm border-warning"
+                    role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                    <strong>NOTE:</strong> &nbsp;TIDAK BISA MELAKUKAN PEMINDAHAN PC PADA LABKOM!
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Form Section -->
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-lg interactive-card p-4 p-md-5">
+                    <h3 class="fw-bold mb-4 border-bottom pb-3">Formulir Booking</h3>
+
+                    <form action="pending-booking.html" method="GET">
+                        <div class="row g-4">
+                            <!-- Nama PIC -->
+                            <div class="col-md-12">
+                                <label for="nama_pic" class="form-label fw-medium">Nama PIC <span
+                                        class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                    <input type="text" class="form-control" id="nama_pic"
+                                        placeholder="Masukkan nama lengkap Anda" required>
+                                </div>
+                            </div>
+
+                            <!-- Labkom -->
+                            <div class="col-md-8">
+                                <label for="labkom" class="form-label fw-medium">Labkom <span
+                                        class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-door-open"></i></span>
+                                    <select class="form-select" id="labkom" required>
+                                        <option value="" selected disabled>Pilih Labkom</option>
+                                        <option value="1">Labkom 1 (29 PC)</option>
+                                        <option value="2">Labkom 2 (32 PC)</option>
+                                        <option value="3">Labkom 3 (55 PC)</option>
+                                        <option value="4">Labkom 4 (36 PC)</option>
+                                        <option value="5">Labkom 5 (13 PC)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Tombol Cek -->
+                            <div class="col-md-4 d-flex align-items-end">
+                                <a href="check-labkom.html" class="btn btn-outline-secondary w-100"><i
+                                        class="bi bi-search me-1"></i> Cek Ketersediaan</a>
+                            </div>
+
+                            <!-- Tanggal -->
+                            <div class="col-md-4">
+                                <label for="tanggal" class="form-label fw-medium">Tanggal <span
+                                        class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                                    <input type="date" class="form-control" id="tanggal" required>
+                                </div>
+                            </div>
+
+                            <!-- Waktu Mulai -->
+                            <div class="col-md-4">
+                                <label for="waktu_mulai" class="form-label fw-medium">Waktu Mulai <span
+                                        class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-clock"></i></span>
+                                    <input type="time" class="form-control" id="waktu_mulai" required>
+                                </div>
+                            </div>
+
+                            <!-- Waktu Selesai -->
+                            <div class="col-md-4">
+                                <label for="waktu_selesai" class="form-label fw-medium">Waktu Selesai <span
+                                        class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-clock-history"></i></span>
+                                    <input type="time" class="form-control" id="waktu_selesai" required>
+                                </div>
+                            </div>
+
+                            <!-- Unit Bisnis -->
+                            <div class="col-md-12">
+                                <label for="unit_bisnis" class="form-label fw-medium">Unit Bisnis <span
+                                        class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-building"></i></span>
+                                    <select class="form-select" id="unit_bisnis" required>
+                                        <option value="" selected disabled>Pilih Unit Bisnis</option>
+                                        <option value="UB1">PT Binawan Inti Teknologi</option>
+                                        <option value="UB2">Universitas Binawan</option>
+                                        <option value="UB3">Klinik Binawan</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Nomor WhatsApp -->
+                            <div class="col-md-6">
+                                <label for="whatsapp" class="form-label fw-medium">Nomor WhatsApp <span
+                                        class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-whatsapp"></i></span>
+                                    <input type="text" class="form-control" id="whatsapp"
+                                        placeholder="Contoh: 081234567890" required>
+                                </div>
+                                <div class="form-text">Mulai dengan 08...</div>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="col-md-6">
+                                <label for="email" class="form-label fw-medium">Email <span
+                                        class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                    <input type="email" class="form-control" id="email" placeholder="email@contoh.com"
+                                        required>
+                                </div>
+                            </div>
+
+                            <!-- Keperluan -->
+                            <div class="col-md-12">
+                                <label for="keperluan" class="form-label fw-medium">Keperluan <span
+                                        class="text-danger">*</span></label>
+                                <textarea class="form-control" id="keperluan" rows="3"
+                                    placeholder="Jelaskan secara singkat keperluan penggunaan Labkom"
+                                    required></textarea>
+                            </div>
+
+                            <!-- Tombol Booking -->
+                            <div class="col-12 mt-5 text-end">
+                                <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5">
+                                    <i class="bi bi-send-fill me-2"></i> Ajukan Booking
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-4 text-center mt-auto border-top">
+        <div class="container text-muted-custom">
+            <p class="mb-1">&copy; 2026 Techub PT Binawan Inti Teknologi</p>
+            <p class="mb-0 small">Developed by IT Infrastructure Team</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

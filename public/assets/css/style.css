@@ -1,0 +1,215 @@
+:root {
+  /* Corporate Light Theme (Default) */
+  --bs-primary: #002B5C;
+  --bs-secondary: #0A4B91;
+  --bs-info: #1F6FEB; /* Accent */
+  --bs-body-bg: #F5F7FA;
+  --bs-body-color: #1E293B;
+  --card-bg: #FFFFFF;
+  --navbar-bg: #FFFFFF;
+  --border-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-bs-theme="dark"] {
+  /* Corporate Dark Theme */
+  --bs-primary: #3B82F6;
+  --bs-secondary: #94A3B8;
+  --bs-info: #1F6FEB;
+  --bs-body-bg: #0F172A;
+  --bs-body-color: #F8FAFC;
+  --card-bg: #1E293B;
+  --navbar-bg: #001C3D;
+  --border-color: rgba(255, 255, 255, 0.1);
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  animation: fadeInBody 0.6s ease-out forwards;
+}
+
+@keyframes fadeInBody {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.navbar {
+  background-color: var(--navbar-bg) !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  transition: background-color 0.3s ease;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  border-radius: 0.75rem;
+  transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover.interactive-card {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.form-control, .form-select {
+  background-color: var(--card-bg);
+  color: var(--bs-body-color);
+  border-color: var(--border-color);
+}
+
+.form-control:focus, .form-select:focus {
+  background-color: var(--card-bg);
+  color: var(--bs-body-color);
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.25rem rgba(31, 111, 235, 0.25);
+}
+
+.btn-primary {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+}
+
+.btn-primary:hover {
+  background-color: var(--bs-secondary);
+  border-color: var(--bs-secondary);
+}
+
+.btn-outline-primary {
+  color: var(--bs-primary);
+  border-color: var(--bs-primary);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--bs-primary);
+  color: #fff;
+}
+
+/* Custom styles for sidebar (Admin) */
+.sidebar {
+  min-height: calc(100vh - 56px);
+  background-color: var(--card-bg);
+  border-right: 1px solid var(--border-color);
+}
+
+.sidebar .nav-link {
+  color: var(--bs-body-color);
+  padding: 0.8rem 1.5rem;
+  border-radius: 0.5rem;
+  margin: 0.2rem 1rem;
+  transition: all 0.2s;
+}
+
+.sidebar .nav-link:hover, .sidebar .nav-link.active {
+  background-color: rgba(31, 111, 235, 0.1);
+  color: var(--bs-info);
+  font-weight: 600;
+}
+
+/* Utils */
+.text-muted-custom {
+  color: #64748B !important;
+}
+
+[data-bs-theme="dark"] .text-muted-custom {
+  color: #94A3B8 !important;
+}
+
+.gradient-bg {
+  background: linear-gradient(135deg, var(--bs-primary), var(--bs-secondary));
+  color: white;
+}
+
+/* Custom Highlight Cards */
+.highlight-card {
+    background: linear-gradient(135deg, #002B5C, #0A4B91) !important;
+    color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .highlight-card {
+    background: linear-gradient(135deg, #0f3768, #16539b) !important;
+    color: #ffffff !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1) !important;
+}
+
+/* Utility to fix dark mode text readability */
+[data-bs-theme="dark"] .bg-light {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+[data-bs-theme="dark"] .table-light {
+    --bs-table-bg: rgba(255, 255, 255, 0.05);
+    --bs-table-color: #F8FAFC;
+    color: #F8FAFC;
+}
+[data-bs-theme="dark"] .text-dark {
+    color: #F8FAFC !important;
+}
+[data-bs-theme="dark"] .bg-warning.text-dark {
+    color: #1E293B !important;
+}
+[data-bs-theme="dark"] .bg-info.text-dark {
+    color: #1E293B !important;
+}
+[data-bs-theme="dark"] .text-secondary {
+    color: #94A3B8 !important;
+}
+[data-bs-theme="dark"] .bg-secondary.bg-opacity-10 {
+    background-color: rgba(148, 163, 184, 0.15) !important;
+}
+[data-bs-theme="dark"] .btn-outline-primary {
+    color: #3B82F6 !important;
+    border-color: #3B82F6 !important;
+}
+[data-bs-theme="dark"] .btn-outline-primary:hover {
+    background-color: #3B82F6 !important;
+    color: #fff !important;
+}
+
+/* Hero Banner Responsive Theme */
+.hero-banner {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    color: #1E293B;
+    border-bottom: 1px solid var(--border-color);
+}
+[data-bs-theme="dark"] .hero-banner {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: #F8FAFC;
+    border-bottom: none;
+}
+.hero-banner .text-muted-custom {
+    color: #64748B !important;
+}
+[data-bs-theme="dark"] .hero-banner .text-muted-custom {
+    color: #94A3B8 !important;
+}
+.hero-logo {
+    opacity: 1;
+    filter: none;
+    transition: filter 0.3s ease;
+}
+[data-bs-theme="dark"] .hero-logo {
+    filter: brightness(0) invert(1);
+}
+
+/* Invert logo color in dark theme */
+[data-bs-theme="dark"] img[src*="Techub-Logo.png"] {
+  filter: invert(1) brightness(2);
+}

@@ -1,0 +1,143 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Booking;
+use App\Services\NotificationService;
+use Illuminate\Support\Str;
+
+class BookingController extends Controller
+{
+    public function store(Request $request)
+    {
+        $request->validate([
+            'pic_name' => 'required|string|max:255',
+            'laboratory_id' => 'required|exists:laboratories,id',
+            'business_unit_id' => 'required|exists:business_units,id',
+            'sub_business_unit_id' => 'nullable|exists:sub_business_units,id',
+            'date' => 'required|date',
+            'start_time' => 'required',
+            'end_time' => 'required|after:start_time',
+            'whatsapp' => 'required|string',
+            'email' => 'required|email',
+            'purpose' => 'required|string',
+            'is_recurring' => 'nullable|boolean',
+            'recurring_duration' => 'nullable|string',
+            'recurring_end_date' => 'nullable|required_if:recurring_duration,custom|date|after_or_equal:date',
+            'tos_agreed' => 'required|accepted',
+        ], [
+            'tos_agreed.required' => 'Anda harus menyetujui Ketentuan Penggunaan Labkom.',
+            'tos_agreed.accepted' => 'Anda harus menyetujui Ketentuan Penggunaan Labkom.'
+        ]);
+
+        $restrictedEmails = \App\Models\RestrictedEmail::pluck('email')->toArray();
+        if (count($restrictedEmails) > 0) {
+            $isAllowed = false;
+            foreach ($restrictedEmails as $allowed) {
+                if (str_ends_with(strtolower($request->email), strtolower($allowed))) {
+                    $isAllowed = true;
+                    break;
+                }
+            }
+            if (!$isAllowed) {
+                return back()->with('error', 'Email tersebut tidak ada di database kami, mohon untuk gunakan email Binawan')->withInput();
+            }
+        }
+
+        $datesToBook = [$request->date];
+        
+        if ($request->is_recurring) {
+            $currentDate = \Carbon\Carbon::parse($request->date)->addWeek();
+            
+            if ($request->recurring_duration === 'custom' && $request->recurring_end_date) {
+                $endDate = \Carbon\Carbon::parse($request->recurring_end_date);
+                while ($currentDate->lte($endDate)) {
+                    $datesToBook[] = $currentDate->format('Y-m-d');
+                    $currentDate->addWeek();
+                }
+            } elseif (is_numeric($request->recurring_duration)) {
+                $weeks = (int) $request->recurring_duration;
+                if ($weeks > 1) {
+                    // Loop starting from 1 since index 0 is already the first date
+                    for ($i = 1; $i < $weeks; $i++) {
+                        $datesToBook[] = $currentDate->format('Y-m-d');
+                        $currentDate->addWeek();
+                    }
+                }
+            }
+        }
+
+        $newEndWithBuffer = date('H:i', strtotime($request->end_time . ' +1 hour'));
+        
+        $firstConflict = null;
+        // Cek ketersediaan (bentrok) untuk semua tanggal yang akan di-book dengan aturan Jeda 1 Jam
+        $conflictingDates = [];
+        foreach ($datesToBook as $bookDate) {
+            $conflict = Booking::with(['businessUnit', 'subBusinessUnit'])
+                ->where('laboratory_id', $request->laboratory_id)
+                ->where('date', $bookDate)
+                ->whereIn('status', ['accepted', 'completed', 'pending'])
+                ->where(function ($query) use ($request, $newEndWithBuffer) {
+                    $query->whereRaw('CAST(? AS TIME) < ADDTIME(end_time, "01:00:00")', [$request->start_time])
+                          ->whereTime('start_time', '<', $newEndWithBuffer);
+                })->first();
+
+            if ($conflict) {
+                if (!$firstConflict) $firstConflict = $conflict;
+                $conflictingDates[] = \Carbon\Carbon::parse($bookDate)->format('d M Y');
+            }
+        }
+
+        if (count($conflictingDates) > 0) {
+            $unitName = optional($firstConflict->businessUnit)->name;
+            $subUnitName = optional($firstConflict->subBusinessUnit)->name;
+            $instansi = $subUnitName ? "{$unitName}/{$subUnitName}" : $unitName;
+            
+            $errorMsg = "Labkom sudah terpakai pada waktu yang sama oleh {$instansi}";
+            return back()->withErrors(['error' => $errorMsg])->withInput();
+        }
+
+        // Format nomor WhatsApp: 08x menjadi 628x
+        $whatsapp = $request->whatsapp;
+        if (str_starts_with($whatsapp, '08')) {
+            $whatsapp = '628' . substr($whatsapp, 2);
+        }
+
+        $groupId = $request->is_recurring ? (string) Str::uuid() : null;
+        $firstBooking = null;
+
+        foreach ($datesToBook as $index => $bookDate) {
+            $trackingCode = 'cbt-' . date('Ymd', strtotime($bookDate)) . '-' . strtoupper(Str::random(4));
+
+            $booking = Booking::create([
+                'tracking_code' => $trackingCode,
+                'group_id' => $groupId,
+                'pic_name' => $request->pic_name,
+                'laboratory_id' => $request->laboratory_id,
+                'business_unit_id' => $request->business_unit_id,
+                'sub_business_unit_id' => $request->sub_business_unit_id,
+                'date' => $bookDate,
+                'start_time' => $request->start_time,
+                'end_time' => $request->end_time,
+                'whatsapp' => $whatsapp,
+                'email' => $request->email,
+                'purpose' => $request->purpose,
+                'status' => 'pending',
+            ]);
+
+            if ($index === 0) {
+                $firstBooking = $booking;
+            }
+
+            // Trigger notification queue (we only send one consolidated notification for the first booking to avoid spamming for every week)
+            if ($index === 0) {
+                $notificationService = new NotificationService();
+                $totalWeeks = count($datesToBook);
+                $notificationService->sendNewBookingNotification($booking, $totalWeeks);
+            }
+        }
+
+        return redirect()->route('booking.track', ['code' => $firstBooking->tracking_code]);
+    }
+}
