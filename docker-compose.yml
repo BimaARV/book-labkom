@@ -32,6 +32,8 @@ services:
     depends_on:
       mariadb:
         condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - app-network
     healthcheck:
@@ -54,6 +56,8 @@ services:
     depends_on:
       mariadb:
         condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - app-network
 
@@ -71,6 +75,8 @@ services:
     depends_on:
       mariadb:
         condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - app-network
 
@@ -93,6 +99,17 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: labkom_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
@@ -100,3 +117,4 @@ networks:
 volumes:
   db_data:
   storage_data:
+  redis_data:

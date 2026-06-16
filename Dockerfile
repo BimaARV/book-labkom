@@ -33,10 +33,14 @@ RUN apk add --no-cache \
     oniguruma-dev \
     mariadb-client \
     tzdata \
+    $PHPIZE_DEPS \
     && cp /usr/share/zoneinfo/$TZ /etc/localtime \
     && echo $TZ > /etc/timezone \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql mbstring zip exif pcntl gd opcache bcmath
+    && docker-php-ext-install pdo_mysql mbstring zip exif pcntl gd opcache bcmath \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apk del $PHPIZE_DEPS
 
 # Copy PHP config
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/production.ini
