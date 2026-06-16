@@ -26,8 +26,7 @@ class AppServiceProvider extends ServiceProvider
                     config(['app.url' => $appUrl]);
                     
                     // Allow the app to dynamically resolve the host from the request for assets
-                    \Illuminate\Support\Facades\URL::forceRootUrl($appUrl);
-                    
+                    // We don't forceRootUrl here so it won't break if accessed via localhost or IP
                     // Force HTTPS if the URL uses https
                     if (str_starts_with($appUrl, 'https://')) {
                         \Illuminate\Support\Facades\URL::forceScheme('https');
