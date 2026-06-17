@@ -23,28 +23,21 @@ FROM php:8.5-fpm-alpine
 # Setup environment variables
 ENV TZ=Asia/Jakarta
 
-# Install system dependencies & PHP extensions
+# Install system dependencies
 RUN apk add --no-cache \
     curl \
     zip \
     unzip \
     git \
-    libzip-dev \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    oniguruma-dev \
     mariadb-client \
     tzdata \
-    linux-headers \
-    $PHPIZE_DEPS \
     && cp /usr/share/zoneinfo/$TZ /etc/localtime \
-    && echo $TZ > /etc/timezone \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql mbstring zip exif pcntl gd opcache bcmath \
-    && yes '' | pecl install redis \
-    && docker-php-ext-enable redis \
-    && apk del $PHPIZE_DEPS linux-headers
+    && echo $TZ > /etc/timezone
+
+# Install PHP extensions using mlocati/docker-php-extension-installer
+ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+RUN chmod +x /usr/local/bin/install-php-extensions && \
+    install-php-extensions pdo_mysql zip exif pcntl gd opcache bcmath redis
 
 # Copy PHP config
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/production.ini
