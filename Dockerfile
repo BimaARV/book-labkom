@@ -9,9 +9,12 @@ RUN composer install \
     --no-interaction \
     --no-plugins \
     --no-scripts \
-    --prefer-dist
+    --prefer-dist \
+    --no-dev
 
 COPY . .
+# Remove any cached config/packages that might have been copied from the host machine
+RUN rm -f bootstrap/cache/*.php
 RUN composer dump-autoload --optimize --no-dev
 
 # Stage 2: Production Runtime

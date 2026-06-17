@@ -25,3 +25,5 @@ tests/
 phpunit.xml
 phpstan.neon
 psalm.xml
+bootstrap/cache/*
+!bootstrap/cache/.gitignore
