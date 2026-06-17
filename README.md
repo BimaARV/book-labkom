@@ -33,8 +33,16 @@ Sistem manajemen pemesanan Labkom berbasis Laravel. Aplikasi ini telah disiapkan
    docker compose up -d
    ```
 5. **Generate APP_KEY & Storage Link**:
+   Karena file `.env` tidak dimasukkan ke dalam container demi keamanan, generate key dengan memunculkannya di layar:
    ```bash
-   docker compose exec app php artisan key:generate
+   docker compose exec app php artisan key:generate --show
+   ```
+   *Copy* teks `base64:...` yang muncul, buka file `.env` di host, lalu *paste* ke baris `APP_KEY=`. Setelah itu perbarui container:
+   ```bash
+   docker compose up -d
+   ```
+   Lalu jalankan pembuatan *storage link*:
+   ```bash
    docker compose exec app php artisan storage:link
    ```
 6. **Migration Database**:
