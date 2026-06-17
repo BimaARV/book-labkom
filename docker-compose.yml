@@ -94,7 +94,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "MYSQL_PWD=\"$$MARIADB_PASSWORD\" mysqladmin ping -h 127.0.0.1 -u \"$$MARIADB_USER\" || exit 1"]
+      test: ["CMD-SHELL", "MYSQL_PWD='${DB_PASSWORD}' mysqladmin ping -h 127.0.0.1 -u '${DB_USERNAME}' || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
