@@ -87,6 +87,22 @@ Sistem manajemen pemesanan Labkom berbasis Laravel. Aplikasi ini telah disiapkan
   - Spesifik service (contoh: Nginx): `docker compose logs -f nginx`
   - Log Laravel tersimpan pada: `storage/logs/laravel.log` (Bisa diakses dari dalam container atau diakses dari host jika dibind).
 
+## Konfigurasi URL & WhatsApp Gateway (Dashboard Admin)
+
+Pengaturan **App URL** dan **WhatsApp Gateway URL** dapat diubah kapan saja secara dinamis langsung dari **Dashboard Admin > Settings** tanpa perlu mengedit *source code* atau memulai ulang *container*.
+Namun, ada aturan penting (terkait keamanan *Mixed Content* di browser) yang **WAJIB** diikuti saat mengisi URL:
+
+1. **Akses via IP (Tahap Uji Coba):**
+   Jika aplikasi belum ditautkan ke domain (masih menggunakan HTTP), Anda punya dua pilihan URL WhatsApp:
+   - Akses Langsung: `http://<IP_SERVER>:3000`
+   - Via Rute Nginx: `http://<IP_SERVER>:8000/whatsapp` *(Disarankan, agar Nginx yang mengarahkan rutenya).*
+
+2. **Akses via Domain HTTPS (Production):**
+   Jika aplikasi sudah live dan menggunakan domain ber-SSL/Gembok Hijau (contoh: `https://labkom.domain.com`), maka Anda **TIDAK BOLEH** mengisi WhatsApp Gateway dengan URL IP (`http://...`). Hal ini akan diblokir paksa oleh browser (Chrome/Firefox).
+   Karena kita sudah membuat "pintu rahasia" di Nginx, Anda cukup menggunakan **satu domain yang sama** untuk keduanya:
+   - **App URL**: `https://labkom.domain.com`
+   - **WhatsApp Gateway URL**: `https://labkom.domain.com/whatsapp`
+
 ## File Synchronization & Update Strategy
 
 - **Bind Mount vs Rebuild**:
