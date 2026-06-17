@@ -94,7 +94,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u $$MARIADB_USER -p$$MARIADB_PASSWORD"]
       interval: 10s
       timeout: 5s
       retries: 5
