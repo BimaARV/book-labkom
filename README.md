@@ -54,6 +54,8 @@ Sistem manajemen pemesanan Labkom berbasis Laravel. Aplikasi ini telah disiapkan
    ```bash
    docker compose exec app php artisan db:seed --force
    ```
+   
+*(Catatan: WhatsApp Gateway/Baileys sudah otomatis tergabung di dalam `docker-compose.yml` dan akan menyala bersamaan dengan aplikasi utama di port `3000` tanpa perlu perintah tambahan).*
 
 ## Operasional
 
@@ -62,14 +64,14 @@ Sistem manajemen pemesanan Labkom berbasis Laravel. Aplikasi ini telah disiapkan
 - **Restart Container**: `docker compose restart`
 - **Rebuild Container**: `docker compose up -d --build` (Gunakan perintah ini setiap kali ada perubahan pada source code PHP atau composer dependencies).
 - **Update Aplikasi (Source Code / Git Pull)**:
-  Aplikasi berjalan tanpa bind-mount, sehingga setiap ada perubahan kode, Anda wajib me-rebuild image.
+  Aplikasi berjalan tanpa bind-mount, sehingga setiap ada pembaruan kode (termasuk kode Laravel maupun kode WhatsApp-Service), Anda wajib merakit ulang image-nya.
   Langkah update (tanpa perlu mematikan aplikasi/zero-downtime):
   ```bash
   git pull origin main
   docker compose build
   docker compose up -d
   ```
-  *(Catatan: Anda tidak perlu menjalankan `docker compose down` atau `stop`. Perintah di atas akan me-rebuild di background, lalu me-restart container dengan versi terbaru dalam hitungan detik).*
+  *(Catatan: Anda tidak perlu menjalankan `docker compose down`. Perintah di atas akan me-rebuild di background, lalu me-restart seluruh container dengan versi terbaru secara otomatis).*
 - **Update Dependency**:
   Ubah file composer, lalu jalankan `docker compose build` agar dependencies ditarik ulang ke dalam image.
 - **Backup Database**:

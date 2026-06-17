@@ -102,6 +102,19 @@ services:
       timeout: 5s
       retries: 5
 
+  whatsapp:
+    build:
+      context: ./whatsapp-service
+      dockerfile: Dockerfile
+    container_name: labkom_whatsapp
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - whatsapp_data:/app/baileys_auth_info
+    networks:
+      - app-network
+
   redis:
     image: redis:8.6-alpine
     container_name: labkom_redis
@@ -121,3 +134,4 @@ volumes:
   db_data:
   storage_data:
   redis_data:
+  whatsapp_data:
