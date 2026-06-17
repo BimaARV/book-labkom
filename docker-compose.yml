@@ -48,6 +48,7 @@ services:
       dockerfile: Dockerfile
     container_name: labkom_queue
     restart: unless-stopped
+    user: "www-data"
     env_file:
       - .env
     entrypoint: ["/usr/local/bin/queue.sh"]
@@ -67,6 +68,7 @@ services:
       dockerfile: Dockerfile
     container_name: labkom_scheduler
     restart: unless-stopped
+    user: "www-data"
     env_file:
       - .env
     entrypoint: ["/usr/local/bin/scheduler.sh"]

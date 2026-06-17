@@ -59,8 +59,8 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/bootstrap/cache
 
-# Switch to non-root user
-USER www-data
+# Maintain root user for PHP-FPM master process
+# Worker processes will automatically drop privileges to www-data
 
 # Expose port 9000 for PHP-FPM
 EXPOSE 9000
