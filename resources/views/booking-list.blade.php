@@ -7,7 +7,7 @@
         <div class="col-lg-8">
             <div class="text-center mb-5">
                 <h2 class="fw-bold mb-3">Cek Booking Saya</h2>
-                <p class="text-muted-custom">Masukkan email Anda untuk melihat status pemesanan</p>
+                <p class="text-muted-custom">Masukkan email atau kode booking Anda untuk melihat status pemesanan</p>
             </div>
 
             <div class="card border-0 shadow-lg interactive-card p-3 p-md-4">
@@ -37,7 +37,7 @@
                                         <div class="card-body">
                                             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
                                                 <div>
-                                                    <h5 class="fw-bold mb-1">{{ optional($booking->laboratory)->name }}</h5>
+                                                    <h5 class="fw-bold mb-1">{{ $booking->lab_name }}</h5>
                                                     <p class="text-muted-custom mb-0 small"><i class="bi bi-building"></i> {{ $booking->pic_name }}</p>
                                                 </div>
                                                 <div>

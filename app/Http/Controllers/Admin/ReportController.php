@@ -62,8 +62,8 @@ class ReportController extends Controller
 
         foreach ($bookings as $booking) {
             if (!in_array($booking->status, ['rejected', 'cancelled'])) {
-                if ($booking->laboratory) {
-                    $labName = $booking->laboratory->name;
+                if ($booking->laboratory || $booking->is_all_labs) {
+                    $labName = $booking->is_all_labs ? 'Semua Labkom' : $booking->laboratory->name;
                     if (!isset($labkoms[$labName])) $labkoms[$labName] = 0;
                     $labkoms[$labName]++;
                 }
@@ -127,10 +127,10 @@ class ReportController extends Controller
         // Generate Charts via QuickChart API
         $buChartBase64 = null;
         if (!empty($childData)) {
-            $buColors = array_slice($baseColors, 0, count($childData));
+            $buColors = array_values(array_slice($baseColors, 0, count($childData)));
             
             $buTotal = array_sum($childData);
-            $buPercentages = array_map(function($val) use ($buTotal) { return round(($val / $buTotal) * 100); }, $childData);
+            $buPercentages = array_values(array_map(function($val) use ($buTotal) { return round(($val / $buTotal) * 100); }, $childData));
 
             $buLabelsWithCounts = [];
             foreach ($childLabels as $idx => $lbl) {
@@ -162,16 +162,18 @@ class ReportController extends Controller
             $buChartUrl = 'https://quickchart.io/chart?w=600&h=450&c=' . urlencode(json_encode($buChartConfig));
             try {
                 $buChartBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($buChartUrl));
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('QuickChart BU Error: ' . $e->getMessage() . ' URL: ' . $buChartUrl);
+            }
         }
 
         $labChartBase64 = null;
         if (!empty($labkoms)) {
-            $labColors = array_slice($baseColors, 0, count($labkoms));
+            $labColors = array_values(array_slice($baseColors, 0, count($labkoms)));
             
             $labDataRaw = array_values($labkoms);
             $labTotal = array_sum($labDataRaw);
-            $labPercentages = array_map(function($val) use ($labTotal) { return round(($val / $labTotal) * 100); }, $labDataRaw);
+            $labPercentages = array_values(array_map(function($val) use ($labTotal) { return round(($val / $labTotal) * 100); }, $labDataRaw));
 
             $labLabelsRaw = array_keys($labkoms);
             $labLabelsWithCounts = [];

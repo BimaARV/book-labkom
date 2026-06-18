@@ -21,6 +21,7 @@
                             <li>Setiap peminjaman wajib dilakukan melalui sistem booking *Techub*.</li>
                             <li>Peminjaman diatur dengan mempertimbangkan jeda waktu (buffer) 1 jam antara satu sesi dengan sesi berikutnya untuk keperluan pembersihan dan pengecekan oleh tim IT.</li>
                             <li>Persetujuan booking sepenuhnya merupakan hak tim IT Infrastructure berdasarkan ketersediaan jadwal.</li>
+                            <li>Tim IT Infrastructure berhak membatalkan request booking jika terdapat agenda kegiatan UKOM pada waktu yang bersamaan.</li>
                         </ul>
                     </div>
 

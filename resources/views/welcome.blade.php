@@ -231,6 +231,7 @@
                     <li>Pemohon wajib menjaga kebersihan dan keamanan ruangan.</li>
                     <li>Booking dapat dibatalkan apabila pemohon tidak hadir tanpa konfirmasi.</li>
                     <li>Kerusakan akibat kelalaian pengguna menjadi tanggung jawab pihak pemohon.</li>
+                    <li>Tim IT Infrastructure berhak membatalkan request booking jika terdapat agenda kegiatan UKOM pada waktu yang bersamaan.</li>
                 </ul>
                 
                 <div class="mt-4 border p-3 rounded theme-transition">

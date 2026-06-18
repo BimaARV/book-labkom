@@ -64,15 +64,16 @@ class StatisticController extends Controller
             }
 
             // --- Laboratory Stats ---
-            $lStats = Booking::select('laboratory_id', \DB::raw('count(*) as total'))
+            $lStats = Booking::select('laboratory_id', 'is_all_labs', \DB::raw('count(*) as total'))
                 ->whereNotIn('status', ['cancelled', 'rejected'])
                 ->with('laboratory')
-                ->groupBy('laboratory_id')
+                ->groupBy('laboratory_id', 'is_all_labs')
                 ->get();
                 
             $labArray = [];
             foreach ($lStats as $stat) {
-                $labArray[] = ['name' => optional($stat->laboratory)->name ?? 'Unknown', 'total' => $stat->total];
+                $name = $stat->is_all_labs ? 'Semua Labkom' : (optional($stat->laboratory)->name ?? 'Unknown');
+                $labArray[] = ['name' => $name, 'total' => $stat->total];
             }
             usort($labArray, function($a, $b) { return $b['total'] <=> $a['total']; });
             
