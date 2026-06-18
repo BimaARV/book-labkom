@@ -141,10 +141,12 @@
                     <th>Keperluan</th>
                     <td>{{ $booking->purpose }}</td>
                 </tr>
+                @if($booking->status === 'completed')
                 <tr>
                     <th>Keadaan Bersih</th>
                     <td>{{ $booking->is_clean ? 'Ya' : 'Tidak' }}</td>
                 </tr>
+                @endif
                 @if(!empty($booking->report_note))
                 <tr>
                     <th>Catatan Laporan</th>

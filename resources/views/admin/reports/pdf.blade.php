@@ -270,7 +270,7 @@
 
     <div class="footer">
         <p>Dicetak pada: {{ \Carbon\Carbon::now()->format('d F Y H:i') }}</p>
-        <p>Laporan di-generate secara otomatis oleh Sistem Techub Admin</p>
+        <p>Laporan di-generate secara otomatis oleh Sistem Techub</p>
     </div>
 
 </body>

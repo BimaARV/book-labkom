@@ -39,7 +39,10 @@
         </tr>
         <tr>
             <th>PIC Pemesan</th>
-            <td>{{ $booking->pic_name }}</td>
+            <td>
+                {{ $booking->pic_name }}<br>
+                <small style="color: #666; font-size: 12px;">{{ $booking->whatsapp }} | {{ $booking->email }}</small>
+            </td>
         </tr>
         <tr>
             <th>Instansi</th>
@@ -98,5 +101,10 @@
         @endif
     </div>
     @endif
+
+    <div style="margin-top: 40px; border-top: 1px solid #ddd; padding-top: 10px; font-size: 11px; color: #666;">
+        <p style="margin: 0;">Laporan di-generate secara otomatis oleh Sistem Techub</p>
+        <p style="margin: 3px 0 0 0;">Dicetak Pada: {{ now()->translatedFormat('l, d F Y H:i:s') }}</p>
+    </div>
 </body>
 </html>

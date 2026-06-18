@@ -40,7 +40,10 @@ class BookingController extends Controller
         }
 
         if ($request->filled('laboratory_id')) {
-            $query->where('laboratory_id', $request->laboratory_id);
+            $query->where(function($q) use ($request) {
+                $q->where('laboratory_id', $request->laboratory_id)
+                  ->orWhere('is_all_labs', true);
+            });
         }
 
         if ($request->filled('date')) {

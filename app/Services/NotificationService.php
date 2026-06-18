@@ -38,6 +38,7 @@ class NotificationService
 
         $message = "INFO: PEMINJAMAN BARU\n\n";
         $message .= "Ada permintaan peminjaman Labkom baru:\n\n";
+        $message .= "Kode Booking: {$booking->tracking_code}\n";
         $message .= "PIC: {$booking->pic_name} ({$instansi})\n";
         $message .= "Labkom: {$labName}\n";
         $message .= "Tanggal: {$date}\n";
@@ -99,6 +100,7 @@ class NotificationService
         }
 
         $message = "⚠️ *PENGAJUAN PERUBAHAN BOOKING*\n\n";
+        $message .= "Kode Booking: {$booking->tracking_code}\n";
         $message .= "Pemohon: *{$booking->pic_name}*\n";
         $message .= "Lab Awal: {$labName}\n";
         $message .= "Jenis Pengajuan: *{$typeLabel}*\n";
@@ -148,6 +150,7 @@ class NotificationService
 
         // WA Message for Group
         $messageGroup = "⚠️ *HASIL PENGAJUAN PERUBAHAN BOOKING*\n\n";
+        $messageGroup .= "Kode Booking: {$booking->tracking_code}\n";
         $messageGroup .= "Pengajuan perubahan untuk *{$booking->pic_name}* telah {$statusText} oleh *{$admin->name}*.\n\n";
         $messageGroup .= "Jenis: {$typeLabel}\n";
         $messageGroup .= "Detail: {$detailText}\n";
@@ -157,6 +160,7 @@ class NotificationService
         // WA Message for User
         $messageUser = "Halo *{$booking->pic_name}*,\n\n";
         $messageUser .= "Pengajuan perubahan booking Anda telah {$statusText}.\n\n";
+        $messageUser .= "Kode Booking: {$booking->tracking_code}\n";
         $messageUser .= "Jenis: {$typeLabel}\n";
         $messageUser .= "Detail: {$detailText}\n";
         $messageUser .= "Diproses oleh: {$admin->name}\n";
@@ -247,7 +251,9 @@ class NotificationService
             }
         }
         $pdfUrl = url('/track/' . $booking->tracking_code . '/pdf');
-        $dataTerkini .= "\n*Informasi Detail Laporan Peminjam Lihat Di:*\n{$pdfUrl}\n";
+        
+        $dataTerkiniGroup = $dataTerkini . "\n*Informasi Detail Laporan Peminjam Lihat Di:*\n{$pdfUrl}\n";
+        $dataTerkiniUser = $dataTerkini . "\n*Informasi Detail Laporan Anda Lihat Di:*\n{$pdfUrl}\n";
 
         if ($gatewayUrl) {
             $message = "⚠️ *STATUS BOOKING: {$statusText}*\n\n";
@@ -256,8 +262,9 @@ class NotificationService
             if (in_array($booking->status, ['rejected', 'cancelled']) && !empty($booking->rejection_reason)) {
                 $message .= "Alasan: {$booking->rejection_reason}\n";
             }
-            $message .= "\n" . $dataTerkini;
-            $message .= "\nCek Detail: {$trackUrl}";
+            $message .= "\nKode Booking: {$booking->tracking_code}";
+            $message .= "\n" . $dataTerkiniGroup;
+            $message .= "Cek Detail: {$trackUrl}";
 
             try {
                 // Send to Group
@@ -284,7 +291,8 @@ class NotificationService
                         $borrowerMessage .= "Alasan: {$booking->rejection_reason}\n\n";
                     }
 
-                    $borrowerMessage .= $dataTerkini;
+                    $borrowerMessage .= "Kode Booking: {$booking->tracking_code}\n";
+                    $borrowerMessage .= $dataTerkiniUser;
                     $borrowerMessage .= "Diproses Oleh: {$adminName}\n\n";
                     $borrowerMessage .= "Cek Status Terkini: {$trackUrl}\n";
                     $borrowerMessage .= "Syarat & Ketentuan (ToS): " . url('/tos') . "\n";
@@ -345,6 +353,7 @@ class NotificationService
             $messageGroup .= "Data booking milik *{$booking->pic_name}* telah diubah oleh *{$admin->name}*.\n\n";
             $messageGroup .= "*Detail Perubahan:*\n- {$changesText}\n\n";
             $messageGroup .= "*Data Terkini:*\n";
+            $messageGroup .= "Kode Booking: {$booking->tracking_code}\n";
             $messageGroup .= "Instansi: {$instansi}\n";
             $messageGroup .= "Labkom: {$labName}\n";
             $messageGroup .= "Tanggal: {$date}\n";
@@ -379,6 +388,7 @@ class NotificationService
                 $messagePic .= "Terdapat perubahan pada detail peminjaman Labkom Anda yang diproses oleh tim Admin. Berikut adalah data yang diperbarui:\n\n";
                 $messagePic .= "- " . implode("\n- ", $changes) . "\n\n";
                 $messagePic .= "*Detail Pemesanan Terkini:*\n";
+                $messagePic .= "Kode Booking: {$booking->tracking_code}\n";
                 $messagePic .= "Instansi: {$instansi}\n";
                 $messagePic .= "Labkom: {$labName}\n";
                 $messagePic .= "Tanggal: {$date}\n";

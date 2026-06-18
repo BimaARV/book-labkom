@@ -22,12 +22,24 @@ class PublicController extends Controller
         // Mengambil semua lab beserta booking yang ada di tanggal tertentu.
         $date = $request->query('date', date('Y-m-d'));
         
+        $allLabsBookings = Booking::where('is_all_labs', true)
+            ->whereDate('date', $date)
+            ->where('status', 'accepted')
+            ->get();
+
         $laboratories = Laboratory::where('status', 'active')->with([
             'bookings' => function($query) use ($date) {
                 $query->whereDate('date', $date)->where('status', 'accepted');
             },
             'labPcs'
         ])->get();
+
+        foreach ($laboratories as $lab) {
+            foreach ($allLabsBookings as $allBooking) {
+                $lab->bookings->push($allBooking);
+            }
+            $lab->bookings = $lab->bookings->sortBy('start_time')->values();
+        }
 
         return view('check', compact('laboratories', 'date'));
     }
