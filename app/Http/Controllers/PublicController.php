@@ -107,10 +107,13 @@ class PublicController extends Controller
             $data['requested_start_time'] = $request->requested_start_time;
             $data['requested_end_time'] = $request->requested_end_time;
         } elseif ($request->type == 'relocation') {
-            $request->validate([
-                'requested_laboratory_id' => 'required|exists:laboratories,id'
-            ]);
-            $data['requested_laboratory_id'] = $request->requested_laboratory_id;
+            if ($request->requested_laboratory_id !== 'all') {
+                $request->validate([
+                    'requested_laboratory_id' => 'required|exists:laboratories,id'
+                ]);
+            }
+            $data['requested_laboratory_id'] = $request->requested_laboratory_id === 'all' ? null : $request->requested_laboratory_id;
+            $data['requested_is_all_labs'] = $request->requested_laboratory_id === 'all';
         }
 
         $changeReq = \App\Models\BookingChangeRequest::create($data);

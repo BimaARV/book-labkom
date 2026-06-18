@@ -122,6 +122,7 @@
                     <td>{{ $booking->report_note }}</td>
                 </tr>
                 @endif
+                @if($booking->status === 'completed')
                 <tr>
                     <th>Lampiran Laporan</th>
                     <td>
@@ -130,6 +131,7 @@
                         </a>
                     </td>
                 </tr>
+                @endif
 
                 <tr>
                     <th>Kode Booking</th>

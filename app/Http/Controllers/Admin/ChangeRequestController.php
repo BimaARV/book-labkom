@@ -46,6 +46,7 @@ class ChangeRequestController extends Controller
                 $booking->end_time = $changeRequest->requested_end_time;
             } elseif ($changeRequest->type === 'relocation') {
                 $booking->laboratory_id = $changeRequest->requested_laboratory_id;
+                $booking->is_all_labs = $changeRequest->requested_is_all_labs;
             }
             $booking->save();
 

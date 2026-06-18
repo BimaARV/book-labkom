@@ -95,7 +95,7 @@ class NotificationService
             $detailText = "Jadwal Baru: {$date} | {$time}";
         } elseif ($changeRequest->type === 'relocation') {
             $typeLabel = 'Pindah Labkom';
-            $newLab = optional($changeRequest->requestedLaboratory)->name;
+            $newLab = $changeRequest->requested_is_all_labs ? 'Semua Labkom' : optional($changeRequest->requestedLaboratory)->name;
             $detailText = "Pindah ke Labkom: {$newLab}";
         }
 
@@ -142,7 +142,7 @@ class NotificationService
             $detailText = "{$date} | {$time}";
         } elseif ($changeRequest->type === 'relocation') {
             $typeLabel = 'Pindah Labkom';
-            $newLab = optional($changeRequest->requestedLaboratory)->name;
+            $newLab = $changeRequest->requested_is_all_labs ? 'Semua Labkom' : optional($changeRequest->requestedLaboratory)->name;
             $detailText = "Pindah ke Labkom: {$newLab}";
         }
 
@@ -249,11 +249,14 @@ class NotificationService
             if (!empty($booking->report_note)) {
                 $dataTerkini .= "Catatan Laporan: {$booking->report_note}\n";
             }
+            $pdfUrl = url('/track/' . $booking->tracking_code . '/pdf');
+            
+            $dataTerkiniGroup = $dataTerkini . "\n*Informasi Detail Laporan Peminjam Lihat Di:*\n{$pdfUrl}\n";
+            $dataTerkiniUser = $dataTerkini . "\n*Informasi Detail Laporan Anda Lihat Di:*\n{$pdfUrl}\n";
+        } else {
+            $dataTerkiniGroup = $dataTerkini . "\n";
+            $dataTerkiniUser = $dataTerkini . "\n";
         }
-        $pdfUrl = url('/track/' . $booking->tracking_code . '/pdf');
-        
-        $dataTerkiniGroup = $dataTerkini . "\n*Informasi Detail Laporan Peminjam Lihat Di:*\n{$pdfUrl}\n";
-        $dataTerkiniUser = $dataTerkini . "\n*Informasi Detail Laporan Anda Lihat Di:*\n{$pdfUrl}\n";
 
         if ($gatewayUrl) {
             $message = "⚠️ *STATUS BOOKING: {$statusText}*\n\n";

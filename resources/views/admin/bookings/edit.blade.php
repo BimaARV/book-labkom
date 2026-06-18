@@ -51,10 +51,11 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
                     <label class="form-label fw-medium">Labkom <span class="text-danger">*</span></label>
-                    <select name="laboratory_id" class="form-select" required>
-                        <option value="">Pilih Labkom</option>
+                    <select name="laboratory_id" id="laboratory_id" class="form-select @error('laboratory_id') is-invalid @enderror" required>
+                        <option value="" disabled>Pilih Labkom</option>
+                        <option value="all" {{ old('laboratory_id', $booking->is_all_labs ? 'all' : $booking->laboratory_id) == 'all' ? 'selected' : '' }}>Semua Labkom (Labkom 1 - Labkom {{ $laboratories->count() }})</option>
                         @foreach($laboratories as $lab)
-                            <option value="{{ $lab->id }}" {{ old('laboratory_id', $booking->laboratory_id) == $lab->id ? 'selected' : '' }}>
+                            <option value="{{ $lab->id }}" {{ old('laboratory_id', $booking->laboratory_id) == $lab->id && !$booking->is_all_labs ? 'selected' : '' }}>
                                 {{ $lab->name }}
                             </option>
                         @endforeach

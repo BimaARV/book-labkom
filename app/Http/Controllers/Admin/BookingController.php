@@ -137,7 +137,7 @@ class BookingController extends Controller
             'email' => 'required|email',
             'business_unit_id' => 'required|exists:business_units,id',
             'sub_business_unit_id' => 'nullable|exists:sub_business_units,id',
-            'laboratory_id' => 'required|exists:laboratories,id',
+            'laboratory_id' => 'required|string',
             'purpose' => 'required|string',
             'date' => 'required|date',
             'start_time' => 'required|date_format:H:i',
@@ -148,6 +148,10 @@ class BookingController extends Controller
             'report_images.*' => 'file|mimes:jpeg,png,jpg,gif,svg,webp,heic,heif|max:10240',
             'report_note' => 'nullable|string'
         ]);
+
+        if ($request->laboratory_id !== 'all') {
+            $request->validate(['laboratory_id' => 'exists:laboratories,id']);
+        }
 
         $originalData = $booking->getOriginal();
         
@@ -162,7 +166,8 @@ class BookingController extends Controller
             'email' => $request->email,
             'business_unit_id' => $request->business_unit_id,
             'sub_business_unit_id' => $request->sub_business_unit_id,
-            'laboratory_id' => $request->laboratory_id,
+            'laboratory_id' => $request->laboratory_id === 'all' ? null : $request->laboratory_id,
+            'is_all_labs' => $request->laboratory_id === 'all',
             'purpose' => $request->purpose,
             'date' => $request->date,
             'start_time' => $request->start_time,
@@ -220,17 +225,19 @@ class BookingController extends Controller
 
                 $oldValue = $originalData[$key] ?? '-';
                 
-                if ($key === 'is_clean') {
-                    $oldStr = $oldValue ? 'Ya' : 'Tidak';
-                    $newStr = $newValue ? 'Ya' : 'Tidak';
-                    $changes[] = "Keadaan Bersih: {$oldStr} -> {$newStr}";
+                if ($key === 'is_clean' || $key === 'is_all_labs') {
+                    if ($key === 'is_clean') {
+                        $oldStr = $oldValue ? 'Ya' : 'Tidak';
+                        $newStr = $newValue ? 'Ya' : 'Tidak';
+                        $changes[] = "Keadaan Bersih: {$oldStr} -> {$newStr}";
+                    }
                     continue;
                 }
 
                 // Fetch relation names for IDs
                 if ($key === 'laboratory_id') {
-                    $oldValue = Laboratory::find($oldValue)->name ?? $oldValue;
-                    $newValue = Laboratory::find($newValue)->name ?? $newValue;
+                    $oldValue = $originalData['is_all_labs'] ?? false ? 'Semua Labkom' : (Laboratory::find($oldValue)->name ?? $oldValue);
+                    $newValue = $booking->is_all_labs ? 'Semua Labkom' : (Laboratory::find($newValue)->name ?? $newValue);
                 } elseif ($key === 'business_unit_id') {
                     $oldValue = BusinessUnit::find($oldValue)->name ?? $oldValue;
                     $newValue = BusinessUnit::find($newValue)->name ?? $newValue;

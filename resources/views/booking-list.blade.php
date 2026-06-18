@@ -152,6 +152,7 @@
                         <label class="form-label">Pilih Labkom Baru</label>
                         <select name="requested_laboratory_id" class="form-select">
                             <option value="">-- Pilih Labkom --</option>
+                            <option value="all">Semua Labkom</option>
                             @if(isset($laboratories))
                                 @foreach($laboratories as $lab)
                                     <option value="{{ $lab->id }}">{{ $lab->name }}</option>

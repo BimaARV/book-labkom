@@ -46,7 +46,7 @@
         </tr>
         <tr>
             <th>Instansi</th>
-            <td>{{ optional($booking->businessUnit)->name }}</td>
+            <td>{{ optional($booking->businessUnit)->name }}{{ $booking->subBusinessUnit ? ' / ' . $booking->subBusinessUnit->name : '' }}</td>
         </tr>
         <tr>
             <th>Labkom</th>
