@@ -14,8 +14,8 @@
             @csrf
             <div class="mb-3">
                 <label class="form-label">Gateway URL</label>
-                <input type="url" name="WA_GATEWAY_URL" id="gateway_url" class="form-control" value="{{ $settings['WA_GATEWAY_URL'] ?? 'http://localhost:3000' }}" required>
-                <div class="form-text">URL endpoint dari service Baileys (contoh: http://localhost:3000)</div>
+                <input type="text" name="WA_GATEWAY_URL" id="gateway_url" class="form-control" value="{{ $settings['WA_GATEWAY_URL'] ?? 'http://localhost:3000' }}" required>
+                <div class="form-text">URL endpoint dari service Baileys (contoh: https://booklab.techub.id/whatsapp atau /whatsapp)</div>
             </div>
             <div class="mb-3">
                 <label class="form-label">API Key (Opsional)</label>

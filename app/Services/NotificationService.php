@@ -18,7 +18,7 @@ class NotificationService
     public function sendNewBookingNotification(Booking $booking, $totalRecurringWeeks = 1)
     {
         $settings = Setting::whereIn('key', ['WA_GATEWAY_URL', 'WA_GROUP_ID'])->pluck('value', 'key');
-        $gatewayUrl = $settings['WA_GATEWAY_URL'] ?? null;
+        $gatewayUrl = $this->getInternalGatewayUrl($settings['WA_GATEWAY_URL'] ?? null);
         $groupId = $settings['WA_GROUP_ID'] ?? null;
 
         if (!$gatewayUrl || !$groupId) {
@@ -71,7 +71,7 @@ class NotificationService
     public function sendChangeRequestNotification(\App\Models\BookingChangeRequest $changeRequest)
     {
         $settings = Setting::whereIn('key', ['WA_GATEWAY_URL', 'WA_GROUP_ID'])->pluck('value', 'key');
-        $gatewayUrl = $settings['WA_GATEWAY_URL'] ?? null;
+        $gatewayUrl = $this->getInternalGatewayUrl($settings['WA_GATEWAY_URL'] ?? null);
         $groupId = $settings['WA_GROUP_ID'] ?? null;
 
         if (!$gatewayUrl || !$groupId) {
@@ -122,7 +122,7 @@ class NotificationService
     public function sendChangeRequestProcessedNotification(\App\Models\BookingChangeRequest $changeRequest, \App\Models\User $admin)
     {
         $settings = Setting::whereIn('key', ['WA_GATEWAY_URL', 'WA_GROUP_ID'])->pluck('value', 'key');
-        $gatewayUrl = $settings['WA_GATEWAY_URL'] ?? null;
+        $gatewayUrl = $this->getInternalGatewayUrl($settings['WA_GATEWAY_URL'] ?? null);
         $groupId = $settings['WA_GROUP_ID'] ?? null;
 
         $booking = $changeRequest->booking;
@@ -213,7 +213,7 @@ class NotificationService
     {
         // 1. WhatsApp Group Notification
         $settings = Setting::pluck('value', 'key');
-        $gatewayUrl = $settings['WA_GATEWAY_URL'] ?? null;
+        $gatewayUrl = $this->getInternalGatewayUrl($settings['WA_GATEWAY_URL'] ?? null);
         $groupId = $settings['WA_GROUP_ID'] ?? null;
 
         $labName = optional($booking->laboratory)->name;
@@ -325,7 +325,7 @@ class NotificationService
     public function sendBookingEditedNotification(Booking $booking, \App\Models\User $admin, array $changes, bool $notifyPic = false)
     {
         $settings = Setting::pluck('value', 'key');
-        $gatewayUrl = $settings['WA_GATEWAY_URL'] ?? null;
+        $gatewayUrl = $this->getInternalGatewayUrl($settings['WA_GATEWAY_URL'] ?? null);
         $groupId = $settings['WA_GROUP_ID'] ?? null;
 
         $labName = optional($booking->laboratory)->name;
@@ -428,7 +428,7 @@ class NotificationService
     public function sendBookingDeletedNotification(array $bookingData, \App\Models\User $admin)
     {
         $settings = Setting::pluck('value', 'key');
-        $gatewayUrl = $settings['WA_GATEWAY_URL'] ?? null;
+        $gatewayUrl = $this->getInternalGatewayUrl($settings['WA_GATEWAY_URL'] ?? null);
         $groupId = $settings['WA_GROUP_ID'] ?? null;
 
         if ($gatewayUrl && $groupId) {
@@ -458,7 +458,7 @@ class NotificationService
         $settings = Setting::pluck('value', 'key');
         
         // WhatsApp Notification
-        $gatewayUrl = $settings['WA_GATEWAY_URL'] ?? null;
+        $gatewayUrl = $this->getInternalGatewayUrl($settings['WA_GATEWAY_URL'] ?? null);
         $groupId = $settings['WA_GROUP_ID'] ?? null;
 
         if ($gatewayUrl && $groupId) {
@@ -501,7 +501,7 @@ class NotificationService
         $settings = Setting::pluck('value', 'key');
         
         // WhatsApp Notification
-        $gatewayUrl = $settings['WA_GATEWAY_URL'] ?? null;
+        $gatewayUrl = $this->getInternalGatewayUrl($settings['WA_GATEWAY_URL'] ?? null);
         $groupId = $settings['WA_GROUP_ID'] ?? null;
 
         if ($gatewayUrl && $groupId) {
@@ -542,7 +542,7 @@ class NotificationService
         $settings = Setting::pluck('value', 'key');
         
         // WhatsApp Notification
-        $gatewayUrl = $settings['WA_GATEWAY_URL'] ?? null;
+        $gatewayUrl = $this->getInternalGatewayUrl($settings['WA_GATEWAY_URL'] ?? null);
         $groupId = $settings['WA_GROUP_ID'] ?? null;
 
         if ($gatewayUrl && $groupId) {
@@ -571,7 +571,7 @@ class NotificationService
     {
         $settings = \App\Models\Setting::pluck('value', 'key');
         
-        $gatewayUrl = $settings['WA_GATEWAY_URL'] ?? null;
+        $gatewayUrl = $this->getInternalGatewayUrl($settings['WA_GATEWAY_URL'] ?? null);
         $groupId = $settings['WA_GROUP_ID'] ?? null;
 
         if ($gatewayUrl && $groupId) {
@@ -638,5 +638,21 @@ class NotificationService
         app()->forgetInstance('mail.manager');
         app()->forgetInstance('mailer');
         Mail::clearResolvedInstances();
+    }
+
+    /**
+     * Resolve the internal gateway URL for backend API calls.
+     */
+    private function getInternalGatewayUrl($gatewayUrl)
+    {
+        if (!$gatewayUrl) return null;
+
+        // If the URL is relative or points to the public Cloudflare domain,
+        // bypass Cloudflare Access by using the internal Docker service name.
+        if ($gatewayUrl === '/whatsapp' || str_contains($gatewayUrl, 'techub.id') || str_contains($gatewayUrl, 'localhost')) {
+            return 'http://whatsapp:3000';
+        }
+
+        return $gatewayUrl;
     }
 }
