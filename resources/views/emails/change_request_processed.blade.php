@@ -55,7 +55,7 @@
             <table class="table-info">
                 <tr>
                     <th>Labkom Awal</th>
-                    <td>{{ optional($changeRequest->booking->laboratory)->name }}</td>
+                    <td>{{ $changeRequest->booking->lab_name }}</td>
                 </tr>
                 <tr>
                     <th>Jenis Pengajuan</th>

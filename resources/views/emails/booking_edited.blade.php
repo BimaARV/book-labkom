@@ -95,8 +95,8 @@
                     </td>
                 </tr>
                 <tr>
-                    <th>Labkom</th>
-                    <td>{{ optional($booking->laboratory)->name }}</td>
+                    <td style="color: #6c757d; font-weight: bold;">Labkom</td>
+                    <td>{{ $booking->lab_name }}</td>
                 </tr>
                 <tr>
                     <th>Tanggal</th>

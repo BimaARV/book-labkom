@@ -127,7 +127,7 @@
                 </tr>
                 <tr>
                     <th>Labkom</th>
-                    <td>{{ optional($booking->laboratory)->name }}</td>
+                    <td>{{ $booking->lab_name }}</td>
                 </tr>
                 <tr>
                     <th>Tanggal</th>

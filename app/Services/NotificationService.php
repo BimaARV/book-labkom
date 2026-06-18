@@ -240,9 +240,11 @@ class NotificationService
         $dataTerkini .= "Waktu: {$time}\n";
         $dataTerkini .= "Keperluan: {$booking->purpose}\n";
 
-        $dataTerkini .= "Keadaan Bersih: " . ($booking->is_clean ? "Ya" : "Tidak") . "\n";
-        if (!empty($booking->report_note)) {
-            $dataTerkini .= "Catatan Laporan: {$booking->report_note}\n";
+        if ($booking->status === 'completed') {
+            $dataTerkini .= "Keadaan Bersih: " . ($booking->is_clean ? "Ya" : "Tidak") . "\n";
+            if (!empty($booking->report_note)) {
+                $dataTerkini .= "Catatan Laporan: {$booking->report_note}\n";
+            }
         }
         $pdfUrl = url('/track/' . $booking->tracking_code . '/pdf');
         $dataTerkini .= "\n*Informasi Detail Laporan Peminjam Lihat Di:*\n{$pdfUrl}\n";
@@ -349,9 +351,11 @@ class NotificationService
             $messageGroup .= "Waktu: {$time}\n";
             $messageGroup .= "Keperluan: {$booking->purpose}\n";
             
-            $messageGroup .= "Keadaan Bersih: " . ($booking->is_clean ? "Ya" : "Tidak") . "\n";
-            if (!empty($booking->report_note)) {
-                $messageGroup .= "Catatan Laporan: {$booking->report_note}\n";
+            if ($booking->status === 'completed') {
+                $messageGroup .= "Keadaan Bersih: " . ($booking->is_clean ? "Ya" : "Tidak") . "\n";
+                if (!empty($booking->report_note)) {
+                    $messageGroup .= "Catatan Laporan: {$booking->report_note}\n";
+                }
             }
             $pdfUrl = url('/track/' . $booking->tracking_code . '/pdf');
             $messageGroup .= "\n*Informasi Detail Laporan Peminjam Lihat Di:*\n{$pdfUrl}\n";
@@ -381,9 +385,11 @@ class NotificationService
                 $messagePic .= "Waktu: {$time}\n";
                 $messagePic .= "Keperluan: {$booking->purpose}\n\n";
                 
-                $messagePic .= "Keadaan Bersih: " . ($booking->is_clean ? "Ya" : "Tidak") . "\n";
-                if (!empty($booking->report_note)) {
-                    $messagePic .= "Catatan Laporan: {$booking->report_note}\n";
+                if ($booking->status === 'completed') {
+                    $messagePic .= "Keadaan Bersih: " . ($booking->is_clean ? "Ya" : "Tidak") . "\n";
+                    if (!empty($booking->report_note)) {
+                        $messagePic .= "Catatan Laporan: {$booking->report_note}\n";
+                    }
                 }
                 $pdfUrl = url('/track/' . $booking->tracking_code . '/pdf');
                 $messagePic .= "\n*Informasi Detail Laporan Anda Lihat Di:*\n{$pdfUrl}\n";

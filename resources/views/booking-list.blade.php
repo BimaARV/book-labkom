@@ -13,11 +13,11 @@
             <div class="card border-0 shadow-lg interactive-card p-3 p-md-4">
                 <div class="card-body p-4">
                     <form action="{{ route('booking.list') }}" method="GET" class="d-flex w-100 flex-column flex-md-row gap-2">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
-                            <input type="text" name="search" class="form-control form-control-lg border-start-0 ps-0" placeholder="Masukkan Email atau Kode Booking" value="{{ request('search') }}" required>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Masukkan Email atau Kode Booking" value="{{ request('search') }}" required>
+                            <button type="submit" class="btn btn-primary px-4">Cari Booking</button>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-lg px-4">Cari Booking</button>
                     </form>
                     @error('email')
                         <div class="text-danger mt-2 small">{{ $message }}</div>
@@ -27,7 +27,7 @@
 
             @if(isset($bookings))
                 <div class="mt-4">
-                    <h5 class="fw-bold mb-3">Hasil Pencarian untuk: <span class="text-primary">{{ $email }}</span></h5>
+                    <h5 class="fw-bold mb-3">Hasil Pencarian untuk: <span class="text-primary">{{ $search }}</span></h5>
                     
                     @if($bookings->count() > 0)
                         <div class="row g-4">
