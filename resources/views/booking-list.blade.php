@@ -12,16 +12,16 @@
 
             <div class="card border-0 shadow-lg interactive-card p-3 p-md-4">
                 <div class="card-body p-4">
-                    <form action="{{ route('booking.list') }}" method="GET">
-                        <div class="input-group input-group-lg">
-                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                            <input type="email" name="email" class="form-control" placeholder="Email yang Anda gunakan saat booking" value="{{ old('email', $email ?? '') }}" required>
-                            <button class="btn btn-primary px-4" type="submit">Cari Data</button>
+                    <form action="{{ route('booking.list') }}" method="GET" class="d-flex w-100 flex-column flex-md-row gap-2">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                            <input type="text" name="search" class="form-control form-control-lg border-start-0 ps-0" placeholder="Masukkan Email atau Kode Booking" value="{{ request('search') }}" required>
                         </div>
-                        @error('email')
-                            <div class="text-danger mt-2 small">{{ $message }}</div>
-                        @enderror
+                        <button type="submit" class="btn btn-primary btn-lg px-4">Cari Booking</button>
                     </form>
+                    @error('email')
+                        <div class="text-danger mt-2 small">{{ $message }}</div>
+                    @enderror
                 </div>
             </div>
 

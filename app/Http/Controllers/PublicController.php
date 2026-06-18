@@ -48,20 +48,20 @@ class PublicController extends Controller
 
     public function bookingList(Request $request)
     {
-        $email = $request->input('email');
+        $search = $request->input('search');
         $bookings = null;
         $laboratories = Laboratory::where('status', 'active')->get();
 
-        if ($email) {
+        if ($search) {
             $request->validate([
-                'email' => 'required|email'
+                'search' => 'required|string'
             ]);
             $bookings = Booking::with(['laboratory', 'changeRequests' => function($q) {
                 $q->where('status', 'pending');
-            }])->where('email', $email)->orderBy('created_at', 'desc')->get();
+            }])->where('email', $search)->orWhere('tracking_code', $search)->orderBy('created_at', 'desc')->get();
         }
 
-        return view('booking-list', compact('bookings', 'email', 'laboratories'));
+        return view('booking-list', compact('bookings', 'search', 'laboratories'));
     }
 
     public function storeChangeRequest(Request $request)

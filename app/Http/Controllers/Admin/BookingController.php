@@ -28,6 +28,7 @@ class BookingController extends Controller
                 $q->where('pic_name', 'like', "%{$search}%")
                   ->orWhere('whatsapp', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('tracking_code', 'like', "%{$search}%")
                   ->orWhereHas('laboratory', function($q2) use ($search) {
                       $q2->where('name', 'like', "%{$search}%");
                   });

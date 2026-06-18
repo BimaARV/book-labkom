@@ -77,8 +77,9 @@
                             <label for="laboratory_id" class="form-label fw-medium">Labkom <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-door-open"></i></span>
-                                <select class="form-select" name="laboratory_id" id="laboratory_id" required>
-                                    <option value="" selected disabled>Pilih Labkom</option>
+                                <select class="form-select" id="laboratory_id" name="laboratory_id" required>
+                                    <option value="">-- Pilih Labkom --</option>
+                                    <option value="all" {{ old('laboratory_id') == 'all' ? 'selected' : '' }}>Pilih Semua Labkom</option>
                                     @foreach($laboratories as $lab)
                                         @php
                                             $totalMapped = $lab->labPcs->count();

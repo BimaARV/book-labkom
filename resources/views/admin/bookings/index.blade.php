@@ -79,7 +79,10 @@
                 <thead class="table-light">
                     <tr>
                         <th>Tgl Dibuat</th>
-                        <th>PIC / Instansi</th>
+                        <th>Kode Booking</th>
+                        <th>PIC</th>
+                        <th>Instansi</th>
+                        <th>Keperluan</th>
                         <th>Labkom</th>
                         <th>Jadwal Peminjaman</th>
                         <th>Status</th>
@@ -90,19 +93,23 @@
                     @forelse($bookings as $booking)
                     <tr>
                         <td>{{ $booking->created_at->format('d M Y, H:i') }}</td>
+                        <td><span class="badge bg-secondary font-monospace">{{ $booking->tracking_code }}</span></td>
                         <td>
                             <div class="fw-semibold">{{ $booking->pic_name }}</div>
-                            <div class="small text-muted-custom">
-                                {{ optional($booking->businessUnit)->name }}
-                                @if($booking->subBusinessUnit)
-                                    - {{ $booking->subBusinessUnit->name }}
-                                @endif
-                            </div>
-                            <div class="small mt-1"><i class="bi bi-whatsapp"></i> {{ $booking->whatsapp }}</div>
+                            <div class="small mt-1 text-muted-custom"><i class="bi bi-whatsapp"></i> {{ $booking->whatsapp }}</div>
+                            <div class="small text-muted-custom"><i class="bi bi-envelope"></i> {{ $booking->email }}</div>
                         </td>
                         <td>
-                            <div class="fw-medium">{{ optional($booking->laboratory)->name }}</div>
-                            <div class="small mt-1 text-muted-custom"><i class="bi bi-chat-left-text"></i> {{ Str::limit($booking->purpose, 40) }}</div>
+                            <div class="fw-medium text-dark">{{ optional($booking->businessUnit)->name }}</div>
+                            @if($booking->subBusinessUnit)
+                                <div class="small text-muted-custom">{{ $booking->subBusinessUnit->name }}</div>
+                            @endif
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-info" onclick="showPurpose('{{ addslashes($booking->purpose) }}')">Lihat Keperluan</button>
+                        </td>
+                        <td>
+                            <div class="fw-medium">{{ $booking->lab_name }}</div>
                         </td>
                         <td>
                             <div class="fw-medium text-primary">{{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }}</div>
@@ -149,7 +156,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="6" class="text-center py-4">Belum ada booking</td></tr>
+                    <tr><td colspan="9" class="text-center py-4">Belum ada booking</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -180,6 +187,15 @@
 
 @push('scripts')
 <script>
+    function showPurpose(purpose) {
+        Swal.fire({
+            title: 'Keperluan Booking',
+            text: purpose,
+            icon: 'info',
+            confirmButtonText: 'Tutup'
+        });
+    }
+
     function promptReject(actionUrl) {
         Swal.fire({
             title: 'Tolak Booking',

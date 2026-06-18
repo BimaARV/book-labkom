@@ -47,7 +47,7 @@
         </tr>
         <tr>
             <th>Labkom</th>
-            <td>{{ optional($booking->laboratory)->name }}</td>
+            <td>{{ $booking->lab_name }}</td>
         </tr>
         <tr>
             <th>Waktu Pelaksanaan</th>
@@ -57,6 +57,7 @@
             <th>Keperluan</th>
             <td>{{ $booking->purpose }}</td>
         </tr>
+        @if($booking->status === 'completed')
         <tr>
             <th>Keadaan Bersih</th>
             <td>{{ $booking->is_clean ? 'Ya' : 'Tidak' }}</td>
@@ -67,9 +68,10 @@
             <td>{{ $booking->report_note }}</td>
         </tr>
         @endif
+        @endif
     </table>
 
-    @if(!$booking->is_clean)
+    @if($booking->status === 'completed' && !$booking->is_clean)
     <div class="images-container">
         <h3 style="text-align: left; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Lampiran Foto Bukti</h3>
         @if(is_array($booking->report_images) && count($booking->report_images) > 0)

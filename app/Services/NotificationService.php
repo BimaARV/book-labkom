@@ -26,7 +26,7 @@ class NotificationService
             return;
         }
 
-        $labName = optional($booking->laboratory)->name;
+        $labName = $booking->lab_name;
         $unitName = optional($booking->businessUnit)->name;
         $subUnitName = optional($booking->subBusinessUnit)->name;
         $instansi = $subUnitName ? "{$unitName} ({$subUnitName})" : $unitName;
@@ -80,7 +80,7 @@ class NotificationService
         }
 
         $booking = $changeRequest->booking;
-        $labName = optional($booking->laboratory)->name;
+        $labName = $booking->lab_name;
         
         $typeLabel = '';
         $detailText = '';
@@ -216,7 +216,7 @@ class NotificationService
         $gatewayUrl = $this->getInternalGatewayUrl($settings['WA_GATEWAY_URL'] ?? null);
         $groupId = $settings['WA_GROUP_ID'] ?? null;
 
-        $labName = optional($booking->laboratory)->name;
+        $labName = $booking->lab_name;
         $unitName = optional($booking->businessUnit)->name;
         $subUnitName = optional($booking->subBusinessUnit)->name;
         $instansi = $subUnitName ? "{$unitName} ({$subUnitName})" : $unitName;
@@ -245,7 +245,7 @@ class NotificationService
             $dataTerkini .= "Catatan Laporan: {$booking->report_note}\n";
         }
         $pdfUrl = url('/track/' . $booking->tracking_code . '/pdf');
-        $dataTerkini .= "\n*Informasi Detail Laporan Anda Lihat Di:*\n{$pdfUrl}\n";
+        $dataTerkini .= "\n*Informasi Detail Laporan Peminjam Lihat Di:*\n{$pdfUrl}\n";
 
         if ($gatewayUrl) {
             $message = "⚠️ *STATUS BOOKING: {$statusText}*\n\n";
@@ -328,7 +328,7 @@ class NotificationService
         $gatewayUrl = $this->getInternalGatewayUrl($settings['WA_GATEWAY_URL'] ?? null);
         $groupId = $settings['WA_GROUP_ID'] ?? null;
 
-        $labName = optional($booking->laboratory)->name;
+        $labName = $booking->lab_name;
         $unitName = optional($booking->businessUnit)->name;
         $subUnitName = optional($booking->subBusinessUnit)->name;
         $instansi = $subUnitName ? "{$unitName} ({$subUnitName})" : $unitName;
@@ -354,7 +354,7 @@ class NotificationService
                 $messageGroup .= "Catatan Laporan: {$booking->report_note}\n";
             }
             $pdfUrl = url('/track/' . $booking->tracking_code . '/pdf');
-            $messageGroup .= "\n*Informasi Detail Laporan Anda Lihat Di:*\n{$pdfUrl}\n";
+            $messageGroup .= "\n*Informasi Detail Laporan Peminjam Lihat Di:*\n{$pdfUrl}\n";
             $messageGroup .= "\nCek Detail: {$trackUrl}";
 
             try {

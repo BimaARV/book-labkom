@@ -13,7 +13,7 @@ class BookingController extends Controller
     {
         $request->validate([
             'pic_name' => 'required|string|max:255',
-            'laboratory_id' => 'required|exists:laboratories,id',
+            'laboratory_id' => 'required',
             'business_unit_id' => 'required|exists:business_units,id',
             'sub_business_unit_id' => 'nullable|exists:sub_business_units,id',
             'date' => 'required|date',
@@ -43,6 +43,11 @@ class BookingController extends Controller
             if (!$isAllowed) {
                 return back()->with('error', 'Email tersebut tidak ada di database kami, mohon untuk gunakan email Binawan')->withInput();
             }
+        }
+
+        $isAllLabs = $request->laboratory_id === 'all';
+        if (!$isAllLabs && !\App\Models\Laboratory::where('id', $request->laboratory_id)->exists()) {
+            return back()->withErrors(['laboratory_id' => 'Labkom yang dipilih tidak valid.'])->withInput();
         }
 
         $datesToBook = [$request->date];
@@ -75,12 +80,18 @@ class BookingController extends Controller
         $conflictingDates = [];
         foreach ($datesToBook as $bookDate) {
             $conflict = Booking::with(['businessUnit', 'subBusinessUnit'])
-                ->where('laboratory_id', $request->laboratory_id)
                 ->where('date', $bookDate)
                 ->whereIn('status', ['accepted', 'completed', 'pending'])
-                ->where(function ($query) use ($request, $newEndWithBuffer) {
+                ->where(function ($query) use ($request, $newEndWithBuffer, $isAllLabs) {
                     $query->whereRaw('CAST(? AS TIME) < ADDTIME(end_time, "01:00:00")', [$request->start_time])
                           ->whereTime('start_time', '<', $newEndWithBuffer);
+                    
+                    if (!$isAllLabs) {
+                        $query->where(function($q) use ($request) {
+                            $q->where('laboratory_id', $request->laboratory_id)
+                              ->orWhere('is_all_labs', true);
+                        });
+                    }
                 })->first();
 
             if ($conflict) {
@@ -114,7 +125,8 @@ class BookingController extends Controller
                 'tracking_code' => $trackingCode,
                 'group_id' => $groupId,
                 'pic_name' => $request->pic_name,
-                'laboratory_id' => $request->laboratory_id,
+                'laboratory_id' => $isAllLabs ? null : $request->laboratory_id,
+                'is_all_labs' => $isAllLabs,
                 'business_unit_id' => $request->business_unit_id,
                 'sub_business_unit_id' => $request->sub_business_unit_id,
                 'date' => $bookDate,
