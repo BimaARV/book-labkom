@@ -15,7 +15,7 @@
                     <form action="{{ route('booking.list') }}" method="GET" class="d-flex w-100 flex-column flex-md-row gap-2">
                         <div class="input-group input-group-lg">
                             <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Masukkan Email atau Kode Booking" value="{{ request('search') }}" required>
+                            <input type="text" name="search" class="form-control" placeholder="Masukkan Email atau Kode Booking" value="{{ request('search') }}" required>
                             <button type="submit" class="btn btn-primary px-4">Cari Booking</button>
                         </div>
                     </form>
@@ -82,7 +82,7 @@
                                                 </div>
                                             @elseif(in_array($booking->status, ['pending', 'accepted']))
                                                 <div class="mt-3 text-end">
-                                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="openChangeModal({{ $booking->id }}, '{{ $booking->laboratory->name }}')">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="openChangeModal({{ $booking->id }}, '{{ $booking->lab_name }}')">
                                                         <i class="bi bi-pencil-square me-1"></i> Ajukan Perubahan
                                                     </button>
                                                 </div>

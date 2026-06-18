@@ -190,7 +190,7 @@
     function showPurpose(purpose) {
         Swal.fire({
             title: '<h4 class="fw-bold mb-0">Keperluan Booking</h4>',
-            html: `<div class="text-start mt-3 p-3 bg-light rounded border"><p class="mb-0 fs-6 text-dark" style="line-height: 1.6;">${purpose}</p></div>`,
+            html: `<div class="text-start mt-3"><p class="mb-0 fs-6" style="line-height: 1.6;">${purpose}</p></div>`,
             showConfirmButton: true,
             confirmButtonText: 'Tutup',
             buttonsStyling: false,
