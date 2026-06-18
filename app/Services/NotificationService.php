@@ -647,12 +647,8 @@ class NotificationService
     {
         if (!$gatewayUrl) return null;
 
-        // If the URL is relative or points to the public Cloudflare domain,
-        // bypass Cloudflare Access by using the internal Docker service name.
-        if ($gatewayUrl === '/whatsapp' || str_contains($gatewayUrl, 'techub.id') || str_contains($gatewayUrl, 'localhost')) {
-            return 'http://whatsapp:3000';
-        }
-
-        return $gatewayUrl;
+        // Force backend requests to always use the internal Docker service network
+        // regardless of what the user sets for the frontend gateway URL.
+        return 'http://whatsapp:3000';
     }
 }
