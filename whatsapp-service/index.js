@@ -48,8 +48,11 @@ async function connectToWhatsApp() {
             } else {
                 console.log('Logged out. Clearing session data...');
                 try {
-                    fs.rmSync('baileys_auth_info', { recursive: true, force: true });
-                } catch(e) {}
+                    const dir = 'baileys_auth_info';
+                    if (fs.existsSync(dir)) {
+                        fs.readdirSync(dir).forEach(f => fs.rmSync(`${dir}/${f}`, { recursive: true, force: true }));
+                    }
+                } catch(e) { console.error('Gagal menghapus auth:', e); }
                 // Start fresh for new QR
                 setTimeout(() => connectToWhatsApp(), 2000);
             }
@@ -146,8 +149,11 @@ app.post('/disconnect', async (req, res) => {
     sock = null;
     
     try {
-        fs.rmSync('baileys_auth_info', { recursive: true, force: true });
-    } catch(e) {}
+        const dir = 'baileys_auth_info';
+        if (fs.existsSync(dir)) {
+            fs.readdirSync(dir).forEach(f => fs.rmSync(`${dir}/${f}`, { recursive: true, force: true }));
+        }
+    } catch(e) { console.error('Gagal menghapus auth:', e); }
     
     // Connect again to generate new QR for future scan
     setTimeout(() => connectToWhatsApp(), 2000);
