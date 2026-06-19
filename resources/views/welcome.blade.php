@@ -201,6 +201,12 @@
                             <textarea class="form-control" name="purpose" id="purpose" rows="3" placeholder="Jelaskan secara singkat keperluan penggunaan Labkom" required>{{ old('purpose') }}</textarea>
                         </div>
 
+                        <!-- Captcha -->
+                        <div class="col-md-4 mt-4">
+                            <label for="captcha" class="form-label fw-medium">Berapa hasil dari {{ $num1 }} + {{ $num2 }}? <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" name="captcha" id="captcha" placeholder="Jawaban" required>
+                        </div>
+
                         <!-- Tombol Booking -->
                         <div class="col-12 mt-5 text-end d-flex flex-column align-items-end">
                             <button type="button" class="btn btn-primary btn-lg rounded-pill px-5" onclick="openTosModal()">

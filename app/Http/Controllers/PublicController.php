@@ -13,7 +13,12 @@ class PublicController extends Controller
     {
         $laboratories = Laboratory::where('status', 'active')->with('labPcs')->get();
         $businessUnits = BusinessUnit::with('subUnits')->get();
-        return view('welcome', compact('laboratories', 'businessUnits'));
+        
+        $num1 = rand(1, 10);
+        $num2 = rand(1, 10);
+        session(['captcha_result' => $num1 + $num2]);
+
+        return view('welcome', compact('laboratories', 'businessUnits', 'num1', 'num2'));
     }
 
     public function check(Request $request)

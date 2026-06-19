@@ -236,14 +236,14 @@
                     {{ \Carbon\Carbon::parse($booking->date)->format('d/m/Y') }}<br>
                     <span style="color: #666; font-size: 11px;">{{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}</span>
                 </td>
-                <td><strong>{{ $booking->pic_name }}</strong></td>
                 <td>
-                    {{ optional($booking->businessUnit)->name }} 
-                    @if($booking->subBusinessUnit)
-                        <br><span style="color: #666; font-size: 11px;">{{ $booking->subBusinessUnit->name }}</span>
-                    @endif
+                    <strong>{{ $booking->pic_name }}</strong><br>
+                    <span style="color: #666; font-size: 11px;">{{ $booking->email }}<br>{{ $booking->whatsapp }}</span>
                 </td>
-                <td>{{ optional($booking->laboratory)->name }}</td>
+                <td>
+                    {{ optional($booking->businessUnit)->name }}{{ $booking->subBusinessUnit ? ' / ' . $booking->subBusinessUnit->name : '' }}
+                </td>
+                <td>{{ $booking->lab_name }}</td>
                 <td>
                     @if($booking->status == 'pending')
                         <span class="status-badge status-pending">Pending</span>

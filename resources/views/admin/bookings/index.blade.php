@@ -100,10 +100,9 @@
                             <div class="small text-muted-custom"><i class="bi bi-envelope"></i> {{ $booking->email }}</div>
                         </td>
                         <td>
-                            <div class="fw-medium text-dark">{{ optional($booking->businessUnit)->name }}</div>
-                            @if($booking->subBusinessUnit)
-                                <div class="small text-muted-custom">{{ $booking->subBusinessUnit->name }}</div>
-                            @endif
+                            <div class="fw-medium text-dark">
+                                {{ optional($booking->businessUnit)->name }}{{ $booking->subBusinessUnit ? ' / ' . $booking->subBusinessUnit->name : '' }}
+                            </div>
                         </td>
                         <td>
                             <button type="button" class="btn btn-sm btn-outline-info" onclick="showPurpose('{{ addslashes($booking->purpose) }}')">Lihat Keperluan</button>
