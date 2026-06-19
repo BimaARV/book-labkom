@@ -109,9 +109,9 @@
 <div class="modal fade" id="changeRequestModal" tabindex="-1" aria-labelledby="changeRequestModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content border-0 shadow">
-              <div class="modal-header border-bottom">
+              <div class="modal-header bg-primary text-white">
                   <h5 class="modal-title fw-bold" id="changeRequestModalLabel"><i class="bi bi-pencil-square me-2"></i>Ajukan Perubahan Booking</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
             <form action="{{ route('booking.change-request') }}" method="POST">
                 @csrf

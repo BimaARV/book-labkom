@@ -105,7 +105,7 @@
                             </div>
                         </td>
                         <td>
-                            <button type="button" class="btn btn-sm btn-outline-info" onclick="showPurpose('{{ addslashes($booking->purpose) }}')">Lihat Keperluan</button>
+                            <button type="button" class="btn btn-sm btn-outline-info" onclick="showPurpose('{{ addslashes($booking->purpose) }}')"><i class="bi bi-eye"></i> Lihat Keperluan</button>
                         </td>
                         <td>
                             <div class="fw-medium">{{ $booking->lab_name }}</div>
@@ -188,14 +188,14 @@
 <script>
     function showPurpose(purpose) {
         Swal.fire({
-            title: '<h4 class="fw-bold mb-0">Keperluan Booking</h4>',
-            html: `<div class="text-start mt-3"><p class="mb-0 fs-6" style="line-height: 1.6;">${purpose}</p></div>`,
+            title: '<h4 class="fw-bold mb-0 text-white"><i class="bi bi-info-circle me-2"></i>Keperluan Booking</h4>',
+            html: `<div class="text-start"><h6 class="fw-bold text-muted mb-2">Keperluan:</h6><div class="bg-light p-3 rounded mb-4 border"><p class="mb-0 fs-6" style="line-height: 1.6;">${purpose}</p></div></div>`,
             showConfirmButton: true,
             confirmButtonText: 'Tutup',
             buttonsStyling: false,
             customClass: {
-                confirmButton: 'btn btn-primary px-4',
-                popup: 'rounded-4 border-0 shadow'
+                confirmButton: 'btn btn-secondary px-4',
+                popup: 'rounded-4 border-0 shadow p-0'
             }
         });
     }

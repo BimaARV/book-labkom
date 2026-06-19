@@ -232,3 +232,76 @@ body {
 [data-bs-theme="dark"] .btn-close {
     filter: invert(1) grayscale(100%) brightness(200%);
 }
+
+/* SweetAlert2 Modal Customization to match Bootstrap Modal */
+.swal2-popup {
+    padding: 0 !important;
+    border-radius: 0.5rem !important;
+    overflow: hidden;
+}
+.swal2-header {
+    background-color: var(--bs-primary) !important;
+    padding: 1rem 1.5rem !important;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    align-items: center !important;
+}
+.swal2-title {
+    color: #fff !important;
+    margin: 0 !important;
+    font-size: 1.25rem !important;
+    justify-content: flex-start !important;
+    text-align: left !important;
+    width: 100%;
+}
+.swal2-close {
+    color: #fff !important;
+    margin: 0 !important;
+    padding: 0 1rem !important;
+    align-self: center !important;
+    background: transparent !important;
+}
+.swal2-close:focus {
+    box-shadow: none !important;
+}
+.swal2-content, .swal2-html-container {
+    padding: 1.5rem !important;
+    text-align: left !important;
+    font-size: 1rem !important;
+}
+.swal2-actions {
+    padding: 1rem 1.5rem !important;
+    margin: 0 !important;
+    background-color: transparent !important;
+    border-top: 1px solid rgba(0,0,0,0.1) !important;
+    justify-content: flex-end !important;
+}
+
+/* SweetAlert2 Dark Mode */
+[data-bs-theme="dark"] .swal2-popup {
+    background-color: var(--card-bg) !important;
+    color: #e2e8f0 !important;
+    border: 1px solid var(--border-color);
+}
+[data-bs-theme="dark"] .swal2-content, 
+[data-bs-theme="dark"] .swal2-html-container {
+    color: #e2e8f0 !important;
+}
+[data-bs-theme="dark"] .swal2-actions {
+    border-top-color: var(--border-color) !important;
+}
+[data-bs-theme="dark"] .swal2-input, 
+[data-bs-theme="dark"] .swal2-textarea {
+    background-color: #1e293b !important;
+    color: #e2e8f0 !important;
+    border-color: #334155 !important;
+}
+[data-bs-theme="dark"] .swal2-input:focus, 
+[data-bs-theme="dark"] .swal2-textarea:focus {
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+[data-bs-theme="dark"] .swal2-validation-message {
+    background-color: var(--card-bg) !important;
+    color: #e2e8f0 !important;
+}
+
