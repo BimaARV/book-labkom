@@ -34,7 +34,7 @@ class NotificationService
         $date = \Carbon\Carbon::parse($booking->date)->format('d M Y');
         $time = \Carbon\Carbon::parse($booking->start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($booking->end_time)->format('H:i');
 
-        $trackUrl = url('/track/' . $booking->tracking_code);
+        $trackUrl = secure_url('/track/' . $booking->tracking_code);
 
         $message = "INFO: PEMINJAMAN BARU\n\n";
         $message .= "Ada permintaan peminjaman Labkom baru:\n\n";
@@ -152,7 +152,7 @@ class NotificationService
             $detailText = "Pindah ke Labkom: {$newLab}";
         }
 
-        $trackUrl = url('/track/' . $booking->tracking_code);
+        $trackUrl = secure_url('/track/' . $booking->tracking_code);
 
         // WA Message for Group
         $messageGroup = "⚠️ *HASIL PENGAJUAN PERUBAHAN BOOKING*\n\n";
@@ -241,7 +241,7 @@ class NotificationService
         ];
         $statusText = $statusMap[$booking->status] ?? '*DIPERBARUI*';
         $adminName = $booking->handled_by ?? 'Admin';
-        $trackUrl = url('/track/' . $booking->tracking_code);
+        $trackUrl = secure_url('/track/' . $booking->tracking_code);
 
         $dataTerkini = "*Detail Pemesanan:*\n";
         $dataTerkini .= "Instansi: {$instansi}\n";
@@ -255,7 +255,7 @@ class NotificationService
             if (!empty($booking->report_note)) {
                 $dataTerkini .= "Catatan Laporan: {$booking->report_note}\n";
             }
-            $pdfUrl = url('/track/' . $booking->tracking_code . '/pdf');
+            $pdfUrl = secure_url('/track/' . $booking->tracking_code . '/pdf');
             
             $dataTerkiniGroup = $dataTerkini . "\n*Informasi Detail Laporan Peminjam Lihat Di:*\n{$pdfUrl}\n";
             $dataTerkiniUser = $dataTerkini . "\n*Informasi Detail Laporan Anda Lihat Di:*\n{$pdfUrl}\n";
@@ -304,7 +304,7 @@ class NotificationService
                     $borrowerMessage .= $dataTerkiniUser;
                     $borrowerMessage .= "Diproses Oleh: {$adminName}\n\n";
                     $borrowerMessage .= "Cek Status Terkini: {$trackUrl}\n";
-                    $borrowerMessage .= "Syarat & Ketentuan (ToS): " . url('/tos') . "\n";
+                    $borrowerMessage .= "Syarat & Ketentuan (ToS): " . secure_url('/tos') . "\n";
                     $borrowerMessage .= "\nInformasi ini juga telah dikirim ke email {$booking->email}";
 
                     Http::timeout(5)->post(rtrim($gatewayUrl, '/') . '/send', [
@@ -353,7 +353,7 @@ class NotificationService
         $instansi = $subUnitName ? "{$unitName} ({$subUnitName})" : $unitName;
         $date = \Carbon\Carbon::parse($booking->date)->format('d M Y');
         $time = \Carbon\Carbon::parse($booking->start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($booking->end_time)->format('H:i');
-        $trackUrl = url('/track/' . $booking->tracking_code);
+        $trackUrl = secure_url('/track/' . $booking->tracking_code);
 
         // 1. WhatsApp Notification to Group
         if ($gatewayUrl && $groupId) {
@@ -375,7 +375,7 @@ class NotificationService
                     $messageGroup .= "Catatan Laporan: {$booking->report_note}\n";
                 }
             }
-            $pdfUrl = url('/track/' . $booking->tracking_code . '/pdf');
+            $pdfUrl = secure_url('/track/' . $booking->tracking_code . '/pdf');
             $messageGroup .= "\n*Informasi Detail Laporan Peminjam Lihat Di:*\n{$pdfUrl}\n";
             $messageGroup .= "\nCek Detail: {$trackUrl}";
 
@@ -410,7 +410,7 @@ class NotificationService
                         $messagePic .= "Catatan Laporan: {$booking->report_note}\n";
                     }
                 }
-                $pdfUrl = url('/track/' . $booking->tracking_code . '/pdf');
+                $pdfUrl = secure_url('/track/' . $booking->tracking_code . '/pdf');
                 $messagePic .= "\n*Informasi Detail Laporan Anda Lihat Di:*\n{$pdfUrl}\n";
                 
                 if ($booking->status === 'completed') {

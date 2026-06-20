@@ -81,7 +81,7 @@
             </div>
             
             <p style="text-align: center;">
-                <a href="{{ url('/login') }}" class="btn" style="color: #ffffff !important; text-decoration: none;">Login ke Dashboard</a>
+                <a href="{{ secure_url('/login') }}" class="btn" style="color: #ffffff !important; text-decoration: none;">Login ke Dashboard</a>
             </p>
             
             <p style="margin-top: 30px;">Salam hangat,<br><strong>Tim IT Infrastruktur</strong></p>

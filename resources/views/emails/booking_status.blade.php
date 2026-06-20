@@ -157,7 +157,7 @@
                 <tr>
                     <th>Lampiran Laporan</th>
                     <td>
-                        <a href="{{ url('/track/' . $booking->tracking_code . '/pdf') }}" target="_blank" style="display: inline-block; padding: 6px 12px; background: #dc2626; border-radius: 4px; text-decoration: none; color: #ffffff; font-size: 12px; font-weight: bold;">
+                        <a href="{{ secure_url('/track/' . $booking->tracking_code . '/pdf') }}" target="_blank" style="display: inline-block; padding: 6px 12px; background: #dc2626; border-radius: 4px; text-decoration: none; color: #ffffff; font-size: 12px; font-weight: bold;">
                             Unduh PDF Laporan
                         </a>
                     </td>
@@ -192,12 +192,12 @@
             <div style="margin-top: 25px; background: #f8fafc; padding: 15px; border-left: 4px solid #002B5C;">
                 <p style="margin: 0;">Anda dapat memantau status terkini peminjaman Anda secara langsung melalui tautan berikut:</p>
                 <p style="margin-top: 10px; margin-bottom: 0;">
-                    <a href="{{ url('/track/' . $booking->tracking_code) }}" style="color: #002B5C; font-weight: bold; text-decoration: none;">Cek Status Peminjaman &rarr;</a>
+                    <a href="{{ secure_url('/track/' . $booking->tracking_code) }}" style="color: #002B5C; font-weight: bold; text-decoration: none;">Cek Status Peminjaman &rarr;</a>
                 </p>
             </div>
             
             <p style="margin-top: 20px; font-size: 0.9em; color: #6c757d;">
-                Dengan melakukan peminjaman, Anda menyetujui <a href="{{ url('/tos') }}" style="color: #1F6FEB; text-decoration: underline;">Syarat dan Ketentuan (ToS)</a> yang berlaku.
+                Dengan melakukan peminjaman, Anda menyetujui <a href="{{ secure_url('/tos') }}" style="color: #1F6FEB; text-decoration: underline;">Syarat dan Ketentuan (ToS)</a> yang berlaku.
             </p>
 
             <p style="margin-top: 30px;">Salam hangat,<br><strong>Tim IT Infrastruktur</strong></p>

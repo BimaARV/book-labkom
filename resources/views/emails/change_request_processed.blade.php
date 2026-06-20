@@ -84,7 +84,7 @@
                 Anda dapat memantau status terkini peminjaman Anda secara langsung melalui tautan berikut:
             </p>
             <div style="text-align: center; margin-top: 30px;">
-                <a href="{{ url('/track/' . $changeRequest->booking->tracking_code) }}" class="btn">Lihat Status Booking</a>
+                <a href="{{ secure_url('/track/' . $changeRequest->booking->tracking_code) }}" class="btn">Lihat Status Booking</a>
             </div>
             
             <p style="margin-top: 30px;">Salam hangat,<br><strong>Tim IT Infrastruktur</strong></p>
