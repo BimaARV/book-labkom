@@ -42,20 +42,21 @@ class LabMappingController extends Controller
             'grid_col' => 'required|integer',
             'name' => 'required|string|max:255',
             'ip_address' => 'nullable|string|max:255',
+            'mac_address' => 'nullable|string|max:255',
             'status' => 'required|in:active,maintenance,broken,inactive,kosong',
             'damage_description' => 'nullable|string',
         ]);
 
         $pc = LabPc::updateOrCreate(
             [
-                'id' => $request->pc_id,
                 'laboratory_id' => $laboratory->id,
-            ],
-            [
                 'grid_row' => $request->grid_row,
                 'grid_col' => $request->grid_col,
+            ],
+            [
                 'name' => $request->name,
                 'ip_address' => $request->ip_address,
+                'mac_address' => $request->mac_address,
                 'status' => $request->status,
             ]
         );

@@ -38,7 +38,7 @@
                 @else
                     <div class="d-inline-block p-4 rounded bg-light" style="min-width: 100%;">
                         <div class="mb-4 pb-3 border-bottom text-muted fw-bold d-flex align-items-center justify-content-center">
-                            <i class="bi bi-easel me-2 fs-4"></i> MEJA DOSEN / DEPAN KELAS
+                            <i class="bi bi-easel me-2 fs-4"></i> MEJA ADMIN
                         </div>
                         
                         <div class="grid-container mx-auto" style="display: grid; gap: 15px; grid-template-columns: repeat({{ $laboratory->grid_cols }}, minmax(100px, 1fr));">
@@ -160,7 +160,7 @@
             let autoName = "PC-" + autoNumber;
             
             Swal.fire({
-                title: 'Tambahkan PC',
+                title: '<h4 class="fw-bold mb-0 text-primary">Tambahkan PC</h4>',
                 html: `
                     <div class="text-start mb-3">
                         Anda akan menambahkan PC pada Baris ${row+1}, Kolom ${col+1}.
@@ -169,9 +169,13 @@
                         <label class="form-label fw-medium text-body">Nama / Nomor PC <span class="text-danger">*</span></label>
                         <input type="text" id="pc-name" class="form-control" value="${autoName}" style="color: var(--bs-body-color);">
                     </div>
-                    <div class="mb-0 text-start">
+                    <div class="mb-3 text-start">
                         <label class="form-label fw-medium text-body">IP Address <span class="text-muted">(Opsional)</span></label>
                         <input type="text" id="pc-ip" class="form-control" placeholder="Misal: 192.168.1.50" style="color: var(--bs-body-color);">
+                    </div>
+                    <div class="mb-0 text-start">
+                        <label class="form-label fw-medium text-body">MAC Address <span class="text-muted">(Opsional)</span></label>
+                        <input type="text" id="pc-mac" class="form-control" placeholder="Misal: 00:1B:44:11:3A:B7" style="color: var(--bs-body-color);">
                     </div>
                     <div class="mt-3 text-start">
                         <label class="form-label fw-medium text-body">Status <span class="text-danger">*</span></label>
@@ -211,13 +215,14 @@
                     return { 
                         name: name, 
                         ip: document.getElementById('pc-ip').value,
+                        mac: document.getElementById('pc-mac').value,
                         status: status,
                         desc: desc
                     }
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    savePcData(null, row, col, result.value.name, result.value.ip, result.value.status, result.value.desc);
+                    savePcData(null, row, col, result.value.name, result.value.ip, result.value.mac, result.value.status, result.value.desc);
                 }
             });
         } else {
@@ -240,11 +245,12 @@
                     <div class="text-start mb-3 border-bottom pb-3 text-body">
                         <div class="mb-1"><strong>Status:</strong> ${statusBadge}</div>
                         <div class="mb-1"><strong>IP Address:</strong> ${pcData.ip_address || '-'}</div>
+                        <div class="mb-1"><strong>MAC Address:</strong> ${pcData.mac_address || '-'}</div>
                         <div class="mb-1"><strong>Posisi:</strong> Baris ${row+1}, Kolom ${col+1}</div>
                         ${damageDescHtml}
                     </div>
                     <div class="d-flex flex-column gap-2">
-                        <button class="btn btn-primary" onclick="editPc(${pcData.id}, '${pcData.name}', '${pcData.ip_address || ''}', '${pcData.status}', ${row}, ${col})">Ubah Informasi PC</button>
+                        <button class="btn btn-primary" onclick="editPc(${pcData.id}, '${pcData.name}', '${pcData.ip_address || ''}', '${pcData.mac_address || ''}', '${pcData.status}', ${row}, ${col})">Ubah Informasi PC</button>
                         <button class="btn btn-danger" onclick="deletePc(${pcData.id})">Hapus dari Denah</button>
                         ${!isBroken ? `<button class="btn btn-warning mt-2 text-dark" onclick="reportDamage(${pcData.id})">Ubah Status (dengan Detail)</button>` : `<div class="alert alert-warning mt-2 small">PC ini sedang memiliki laporan status non-aktif/rusak. Buka tab Data Kerusakan untuk update.</div>`}
                     </div>
@@ -261,7 +267,7 @@
         }
     }
 
-    function savePcData(id, row, col, name, ip, status, damageDesc = null) {
+    function savePcData(id, row, col, name, ip, mac, status, damageDesc = null) {
         fetch(`{{ route('admin.lab-mappings.save-pc', $laboratory) }}`, {
             method: 'POST',
             headers: {
@@ -274,6 +280,7 @@
                 grid_col: col,
                 name: name,
                 ip_address: ip,
+                mac_address: mac,
                 status: status,
                 damage_description: damageDesc
             })
@@ -286,7 +293,7 @@
         });
     }
 
-    function editPc(id, name, ip, status, row, col) {
+    function editPc(id, name, ip, mac, status, row, col) {
         Swal.fire({
             title: 'Ubah PC',
             html: `
@@ -294,9 +301,13 @@
                     <label class="form-label fw-medium text-body">Nama / Nomor PC <span class="text-danger">*</span></label>
                     <input type="text" id="edit-pc-name" class="form-control" value="${name}" style="color: var(--bs-body-color);">
                 </div>
-                <div class="mb-0 text-start">
+                <div class="mb-3 text-start">
                     <label class="form-label fw-medium text-body">IP Address <span class="text-muted">(Opsional)</span></label>
                     <input type="text" id="edit-pc-ip" class="form-control" value="${ip}" style="color: var(--bs-body-color);">
+                </div>
+                <div class="mb-0 text-start">
+                    <label class="form-label fw-medium text-body">MAC Address <span class="text-muted">(Opsional)</span></label>
+                    <input type="text" id="edit-pc-mac" class="form-control" value="${mac}" style="color: var(--bs-body-color);">
                 </div>
                 <div class="mt-3 text-start">
                     <label class="form-label fw-medium text-body">Status <span class="text-danger">*</span></label>
@@ -336,13 +347,14 @@
                 return { 
                     name: newName, 
                     ip: document.getElementById('edit-pc-ip').value,
+                    mac: document.getElementById('edit-pc-mac').value,
                     status: newStatus,
                     desc: newDesc
                 }
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                savePcData(id, row, col, result.value.name, result.value.ip, result.value.status, result.value.desc);
+                savePcData(id, row, col, result.value.name, result.value.ip, result.value.mac, result.value.status, result.value.desc);
             }
         });
     }
