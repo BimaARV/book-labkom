@@ -27,16 +27,6 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
 
-    <!-- Preloader -->
-    <div id="page-preloader">
-        <div class="preloader-content">
-            <img src="{{ asset('Techub-Logo.png') }}" alt="Techub Logo" height="60" class="mb-3">
-            <div class="spinner-border text-primary d-block mx-auto" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
-    </div>
-
     <!-- Admin Navbar -->
     <nav class="navbar navbar-expand-lg sticky-top border-bottom">
         <div class="container-fluid px-3 px-md-4">

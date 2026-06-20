@@ -60,14 +60,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
-
-// Hide preloader on page load
-window.addEventListener('load', () => {
-    const preloader = document.getElementById('page-preloader');
-    if (preloader) {
-        preloader.classList.add('hidden');
-        setTimeout(() => {
-            preloader.style.display = 'none';
-        }, 600);
-    }
-});
