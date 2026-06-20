@@ -100,12 +100,17 @@ class NotificationService
             $detailText = "- Labkom Awal: {$oldLab}\n- Labkom Tujuan: {$newLab}";
         }
 
+        $businessUnitText = optional($booking->businessUnit)->name;
+        if ($booking->subBusinessUnit) {
+            $businessUnitText .= ' - ' . $booking->subBusinessUnit->name;
+        }
+
         $message = "⚠️ *PENGAJUAN PERUBAHAN BOOKING*\n\n";
         $message .= "Kode Booking: {$booking->tracking_code}\n";
         $message .= "Pemohon:\n";
         $message .= "- Nama: *{$booking->pic_name}*\n";
         $message .= "- Email: {$booking->email}\n";
-        $message .= "- Unit Bisnis: " . optional($booking->businessUnit)->name . "\n\n";
+        $message .= "- Unit Bisnis: {$businessUnitText}\n\n";
         $message .= "Lab Awal: {$labName}\n";
         $message .= "Jenis Pengajuan: *{$typeLabel}*\n";
         $message .= "Alasan: {$changeRequest->reason}\n\n";
@@ -153,6 +158,11 @@ class NotificationService
 
         $trackUrl = secure_url('/track/' . $booking->tracking_code);
 
+        $businessUnitText = optional($booking->businessUnit)->name;
+        if ($booking->subBusinessUnit) {
+            $businessUnitText .= ' - ' . $booking->subBusinessUnit->name;
+        }
+
         // WA Message for Group
         $messageGroup = "⚠️ *HASIL PENGAJUAN PERUBAHAN BOOKING*\n\n";
         $messageGroup .= "Kode Booking: {$booking->tracking_code}\n";
@@ -160,10 +170,10 @@ class NotificationService
         $messageGroup .= "Pemohon:\n";
         $messageGroup .= "- Nama: *{$booking->pic_name}*\n";
         $messageGroup .= "- Email: {$booking->email}\n";
-        $messageGroup .= "- Unit Bisnis: " . optional($booking->businessUnit)->name . "\n\n";
+        $messageGroup .= "- Unit Bisnis: {$businessUnitText}\n\n";
         $messageGroup .= "Jenis: {$typeLabel}\n";
         $messageGroup .= "Detail:\n{$detailText}\n";
-        $messageGroup .= "Catatan Admin: " . ($changeRequest->admin_note ?? '-') . "\n\n";
+        $messageGroup .= "Catatan IT Infrastructure: " . ($changeRequest->admin_note ?? '-') . "\n\n";
         $messageGroup .= "Cek Detail: {$trackUrl}";
 
         // WA Message for User
@@ -173,12 +183,12 @@ class NotificationService
         $messageUser .= "Pemohon:\n";
         $messageUser .= "- Nama: *{$booking->pic_name}*\n";
         $messageUser .= "- Email: {$booking->email}\n";
-        $messageUser .= "- Unit Bisnis: " . optional($booking->businessUnit)->name . "\n\n";
+        $messageUser .= "- Unit Bisnis: {$businessUnitText}\n\n";
         $messageUser .= "Jenis: {$typeLabel}\n";
         $messageUser .= "Detail:\n{$detailText}\n";
-        $messageUser .= "Diproses oleh: {$admin->name}\n";
+        $messageUser .= "Diproses Oleh IT Infrastructure: {$admin->name}\n";
         if (!empty($changeRequest->admin_note)) {
-            $messageUser .= "Catatan Admin: {$changeRequest->admin_note}\n";
+            $messageUser .= "Catatan IT Infrastructure: {$changeRequest->admin_note}\n";
         }
         $messageUser .= "\nCek Detail Terbaru: {$trackUrl}\n";
         $messageUser .= "Informasi ini juga telah dikirim ke email {$booking->email}.";
@@ -274,7 +284,7 @@ class NotificationService
         if ($gatewayUrl) {
             $message = "⚠️ *STATUS BOOKING: {$statusText}*\n\n";
             $message .= "Peminjaman Labkom untuk *{$booking->pic_name}* telah diperbarui.\n\n";
-            $message .= "Diproses Oleh: {$adminName}\n";
+            $message .= "Di Proses Oleh IT Infrastructure: {$adminName}\n";
             if (in_array($booking->status, ['rejected', 'cancelled']) && !empty($booking->rejection_reason)) {
                 $message .= "Alasan: {$booking->rejection_reason}\n";
             }
@@ -309,7 +319,7 @@ class NotificationService
 
                     $borrowerMessage .= "Kode Booking: {$booking->tracking_code}\n";
                     $borrowerMessage .= $dataTerkiniUser;
-                    $borrowerMessage .= "Diproses Oleh: {$adminName}\n\n";
+                    $borrowerMessage .= "Di Proses Oleh IT Infrastructure: {$adminName}\n\n";
                     $borrowerMessage .= "Cek Status Terkini: {$trackUrl}\n";
                     $borrowerMessage .= "Syarat & Ketentuan (ToS): " . secure_url('/tos') . "\n";
                     $borrowerMessage .= "\nInformasi ini juga telah dikirim ke email {$booking->email}";

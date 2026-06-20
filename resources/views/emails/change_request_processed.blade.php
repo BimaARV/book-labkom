@@ -60,7 +60,12 @@
                         <ul style="margin:0; padding-left:20px;">
                             <li>Nama: {{ $changeRequest->booking->pic_name }}</li>
                             <li>Email: {{ $changeRequest->booking->email }}</li>
-                            <li>Unit Bisnis: {{ optional($changeRequest->booking->businessUnit)->name }}</li>
+                            <li>Unit Bisnis: 
+                                {{ optional($changeRequest->booking->businessUnit)->name }}
+                                @if($changeRequest->booking->subBusinessUnit)
+                                    - {{ $changeRequest->booking->subBusinessUnit->name }}
+                                @endif
+                            </li>
                         </ul>
                     </td>
                 </tr>
@@ -73,7 +78,7 @@
                     <td>{!! $detailText !!}</td>
                 </tr>
                 <tr>
-                    <th>Diproses Oleh</th>
+                    <th>Diproses Oleh IT Infrastructure</th>
                     <td>{{ $admin->name }}</td>
                 </tr>
                 @if(!empty($changeRequest->admin_note))
