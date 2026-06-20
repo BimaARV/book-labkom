@@ -31,7 +31,7 @@
                         <td class="pe-4 text-end">
                             <div class="d-flex justify-content-end gap-2 align-items-center">
                                 <button class="btn btn-sm btn-outline-primary" onclick="openEditModal({{ $item->id }}, '{{ addslashes($item->email) }}')"><i class="bi bi-pencil"></i></button>
-                                <form action="{{ route('admin.restricted-emails.destroy', $item->id) }}" method="POST" class="m-0 p-0" onsubmit="return confirm('Yakin ingin menghapus {{ $item->email }} dari daftar?');">
+                                <form action="{{ route('admin.restricted-emails.destroy', $item->id) }}" method="POST" class="m-0 p-0 delete-form">
                                     @csrf
                                     @method('DELETE')
                                     <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>

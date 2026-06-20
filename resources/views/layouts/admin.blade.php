@@ -154,6 +154,25 @@
         </div>
     </div>
 
+    <!-- Modal Hapus Global -->
+    <div class="modal fade" id="globalDeleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>Hapus Data</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.</p>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-danger" id="globalDeleteConfirmBtn">Ya, Hapus</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
@@ -225,24 +244,29 @@
     <!-- SweetAlert Global Delete Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            let currentDeleteForm = null;
+            const globalDeleteModalEl = document.getElementById('globalDeleteModal');
+            let globalDeleteModal = null;
+            
+            if (globalDeleteModalEl) {
+                globalDeleteModal = new bootstrap.Modal(globalDeleteModalEl);
+                document.getElementById('globalDeleteConfirmBtn').addEventListener('click', function() {
+                    if (currentDeleteForm) {
+                        currentDeleteForm.submit();
+                    }
+                });
+            }
+
             const deleteForms = document.querySelectorAll('form.delete-form');
             deleteForms.forEach(form => {
                 form.addEventListener('submit', function (e) {
                     e.preventDefault();
-                    Swal.fire({
-                        title: 'Apakah Anda yakin?',
-                        text: "Data yang dihapus tidak dapat dikembalikan!",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#6c757d',
-                        confirmButtonText: 'Ya, Hapus!',
-                        cancelButtonText: 'Batal'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            form.submit();
-                        }
-                    });
+                    if (globalDeleteModal) {
+                        currentDeleteForm = form;
+                        globalDeleteModal.show();
+                    } else {
+                        if (confirm('Yakin ingin menghapus data ini?')) form.submit();
+                    }
                 });
             });
 
