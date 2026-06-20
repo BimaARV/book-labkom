@@ -22,22 +22,22 @@
         $statusClass = $changeRequest->status === 'approved' ? 'status-approved' : 'status-rejected';
         $statusText = $changeRequest->status === 'approved' ? 'DISETUJUI' : 'DITOLAK';
         
-        $labName = $changeRequest->booking->lab_name;
+        $changeRequest->original_lab_name = $changeRequest->booking->lab_name;
         
         $typeLabel = '';
         $detailText = '';
         if ($changeRequest->type === 'cancellation') {
             $typeLabel = 'Pembatalan';
-            $detailText = "Labkom: {$labName}";
+            $detailText = "Labkom: {$changeRequest->original_lab_name}";
         } elseif ($changeRequest->type === 'reschedule') {
             $typeLabel = 'Perubahan Jadwal';
             $date = \Carbon\Carbon::parse($changeRequest->requested_date)->format('d M Y');
             $time = \Carbon\Carbon::parse($changeRequest->requested_start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($changeRequest->requested_end_time)->format('H:i');
-            $detailText = "Labkom: {$labName} \nJadwal Baru: {$date} | {$time}";
+            $detailText = "Labkom: {$changeRequest->original_lab_name} \nJadwal Baru: {$date} | {$time}";
         } elseif ($changeRequest->type === 'relocation') {
             $typeLabel = 'Pindah Labkom';
             $newLab = $changeRequest->requested_is_all_labs ? \App\Models\Laboratory::getAllLabsName() : optional($changeRequest->requestedLaboratory)->name;
-            $detailText = "Dari: {$labName} \nMenjadi: {$newLab}";
+            $detailText = "Dari: {$changeRequ  e$changeRequest->original_lab_name} \nMenjadi: {$newLab}";
         }
     @endphp
 

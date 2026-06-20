@@ -47,7 +47,16 @@
                                     Tgl Baru: <strong>{{ \Carbon\Carbon::parse($req->requested_date)->format('d/m/Y') }}</strong><br>
                                     Waktu: <strong>{{ \Carbon\Carbon::parse($req->requested_start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($req->requested_end_time)->format('H:i') }}</strong>
                                 @elseif($req->type == 'relocation')
-                                    Lab Awal: <br><strong>{{ $req->original_lab_name }}</strong><br>
+                                  Lab Awal: <br>
+                                    <strong>
+                                        @if($req->original_is_all_labs)
+                                            {{ \App\Models\Laboratory::getAllLabsName() }}
+                                        @elseif($req->original_laboratory_id)
+                                            {{ optional($req->originalLaboratory)->name ?? '-' }}
+                                        @else
+                                            <span class="text-muted fst-italic small">Data lama</span>
+                                        @endif
+                                    </strong><br>
                                     Lab Tujuan: <br><strong>{{ $req->requested_is_all_labs ? \App\Models\Laboratory::getAllLabsName() : optional($req->requestedLaboratory)->name }}</strong>
                                 @else
                                     <span class="text-muted">-</span>

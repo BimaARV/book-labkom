@@ -35,7 +35,6 @@ class BookingChangeRequest extends Model
         if ($this->original_laboratory_id) {
             return $this->originalLaboratory ? $this->originalLaboratory->name : '-';
         }
-        // Fallback for older data
-        return $this->booking ? $this->booking->lab_name : '-';
+        return 'Tidak Tercatat';
     }
 }

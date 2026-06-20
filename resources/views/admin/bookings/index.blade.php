@@ -1,6 +1,7 @@
 @extends('layouts.admin')
 @section('title', 'Manajemen Booking | Techub Admin')
 @section('content')
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h3 class="fw-bold mb-0">Manajemen Booking</h3>
 </div>
