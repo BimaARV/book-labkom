@@ -272,6 +272,7 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
             body: JSON.stringify({
@@ -285,11 +286,33 @@
                 damage_description: damageDesc
             })
         })
-        .then(res => res.json())
-        .then(data => {
-            if(data.success) {
-                window.location.reload();
+        .then(async res => {
+            const isJson = res.headers.get('content-type')?.includes('application/json');
+            const data = isJson ? await res.json() : null;
+            if(!res.ok) {
+                let errorMsg = 'Terjadi kesalahan dari server';
+                if (data && data.message) errorMsg = data.message;
+                if (data && data.errors) {
+                    errorMsg = Object.values(data.errors).map(e => e.join(', ')).join('<br>');
+                }
+                throw new Error(errorMsg);
             }
+            return data;
+        })
+        .then(data => {
+            if(data && data.success) {
+                window.location.reload();
+            } else {
+                Swal.fire('Error', (data && data.message) ? data.message : 'Gagal menyimpan PC.', 'error');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            Swal.fire({
+                title: 'Error',
+                html: err.message || 'Terjadi kesalahan saat menghubungi server.',
+                icon: 'error'
+            });
         });
     }
 
