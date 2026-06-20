@@ -143,7 +143,7 @@
                                 </form>
                                 <button type="button" class="btn btn-sm btn-danger reject-btn" title="Tolak" onclick="promptReject('{{ route('admin.bookings.update', $booking) }}')"><i class="bi bi-x-lg"></i></button>
                                 @elseif($booking->status == 'accepted')
-                                <button type="button" class="btn btn-sm btn-info text-white accept-btn" title="Selesaikan" onclick="promptComplete('{{ route('admin.bookings.update', $booking) }}')"><i class="bi bi-check-all"></i></button>
+                                <button type="button" class="btn btn-sm btn-info text-dark accept-btn" title="Selesaikan" onclick="promptComplete('{{ route('admin.bookings.update', $booking) }}')"><i class="bi bi-check-all"></i></button>
                                 <button type="button" class="btn btn-sm btn-warning" title="Batalkan" onclick="promptCancel('{{ route('admin.bookings.update', $booking) }}')"><i class="bi bi-slash-circle"></i></button>
                                 @endif
                                 <a href="{{ route('admin.bookings.edit', $booking) }}" class="btn btn-sm btn-primary" title="Edit"><i class="bi bi-pencil"></i></a>
@@ -260,14 +260,14 @@
 
     function promptComplete(actionUrl) {
         Swal.fire({
-            title: 'Selesaikan Booking',
+            title: '<h4 class="fw-bold mb-0 text-primary"><i class="bi bi-check-circle me-2"></i>Selesaikan Booking</h4>',
             background: 'var(--bs-body-bg, #fff)',
             color: 'var(--bs-body-color, #000)',
             html: `
-                <div class="text-start">
+                <div class="text-start mt-3">
                     <p class="mb-3" style="font-size: 0.9rem; opacity: 0.8;">Pastikan kondisi labkom setelah digunakan.</p>
                     <div class="form-check form-switch form-check-lg d-flex align-items-center gap-2 p-3 rounded mb-3" style="border: 1px solid var(--bs-border-color, #dee2e6);">
-                        <input class="form-check-input ms-0 mt-0" type="checkbox" id="swal_is_clean" value="1" style="width: 2.5em; height: 1.25em; cursor: pointer;">
+                        <input class="form-check-input ms-0 mt-0 border-secondary" type="checkbox" id="swal_is_clean" value="1" style="width: 2.5em; height: 1.25em; cursor: pointer; border-width: 2px;">
                         <label class="form-check-label fw-bold text-success fs-5 ms-2" for="swal_is_clean" style="cursor: pointer;">Labkom dalam Keadaan Bersih</label>
                     </div>
                     <div id="swal_report_container" style="display: block;">
@@ -287,7 +287,7 @@
             cancelButtonText: 'Kembali',
             buttonsStyling: false,
             customClass: {
-                confirmButton: 'btn btn-info text-white',
+                confirmButton: 'btn btn-primary',
                 cancelButton: 'btn btn-secondary ms-2'
             },
             didOpen: () => {
