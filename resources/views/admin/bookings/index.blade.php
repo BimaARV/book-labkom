@@ -202,7 +202,9 @@
 
     function promptReject(actionUrl) {
         Swal.fire({
-            title: 'Tolak Booking',
+            title: '<h4 class="fw-bold mb-0 text-danger"><i class="bi bi-x-circle me-2"></i>Tolak Booking</h4>',
+            background: 'var(--bs-body-bg, #fff)',
+            color: 'var(--bs-body-color, #000)',
             text: 'Masukkan alasan penolakan:',
             input: 'text',
             inputPlaceholder: 'Contoh: Lab sedang digunakan untuk ujian...',
@@ -231,7 +233,9 @@
 
     function promptCancel(actionUrl) {
         Swal.fire({
-            title: 'Batalkan Booking',
+            title: '<h4 class="fw-bold mb-0 text-danger"><i class="bi bi-slash-circle me-2"></i>Batalkan Booking</h4>',
+            background: 'var(--bs-body-bg, #fff)',
+            color: 'var(--bs-body-color, #000)',
             text: 'Masukkan alasan pembatalan:',
             input: 'text',
             inputPlaceholder: 'Contoh: Terjadi perubahan jadwal mendadak...',
