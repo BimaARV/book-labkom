@@ -48,7 +48,7 @@ class ChangeRequestController extends Controller
                 $booking->laboratory_id = $changeRequest->requested_laboratory_id;
                 $booking->is_all_labs = $changeRequest->requested_is_all_labs;
             }
-            $booking->save();
+            // DO NOT save booking yet!
 
         } else {
             $changeRequest->status = 'rejected';
@@ -57,6 +57,8 @@ class ChangeRequestController extends Controller
         $changeRequest->admin_note = $request->admin_note;
         $changeRequest->save();
 
+        $actionText = $request->action === 'approve' ? 'disetujui' : 'ditolak';
+
         try {
             $notificationService = new \App\Services\NotificationService();
             $notificationService->sendChangeRequestProcessedNotification($changeRequest, auth()->user());
@@ -64,7 +66,10 @@ class ChangeRequestController extends Controller
             \Illuminate\Support\Facades\Log::error("Failed to trigger change request process notification: " . $e->getMessage());
         }
 
-        $actionText = $request->action === 'approve' ? 'disetujui' : 'ditolak';
+        if ($request->action === 'approve') {
+            $booking->save();
+        }
+
         return back()->with('success', "Permintaan perubahan berhasil {$actionText}.");
     }
 

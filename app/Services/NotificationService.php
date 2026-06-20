@@ -95,11 +95,12 @@ class NotificationService
             $detailText = "Jadwal Baru: {$date} | {$time}";
         } elseif ($changeRequest->type === 'relocation') {
             $typeLabel = 'Pindah Labkom';
+            $oldLab = $booking->lab_name;
             $newLab = $changeRequest->requested_is_all_labs ? \Illuminate\Support\Facades\Cache::remember('all_labs_name', 3600, function () {
                 $labs = \App\Models\Laboratory::where('status', 'active')->orderBy('id')->get();
                 return $labs->count() > 1 ? $labs->first()->name . ' - ' . $labs->last()->name : 'Semua Labkom';
             }) : optional($changeRequest->requestedLaboratory)->name;
-            $detailText = "Pindah ke Labkom: {$newLab}";
+            $detailText = "Labkom Awal: {$oldLab}\nLabkom Tujuan: {$newLab}";
         }
 
         $message = "⚠️ *PENGAJUAN PERUBAHAN BOOKING*\n\n";
@@ -145,11 +146,12 @@ class NotificationService
             $detailText = "{$date} | {$time}";
         } elseif ($changeRequest->type === 'relocation') {
             $typeLabel = 'Pindah Labkom';
+            $oldLab = $booking->lab_name;
             $newLab = $changeRequest->requested_is_all_labs ? \Illuminate\Support\Facades\Cache::remember('all_labs_name', 3600, function () {
                 $labs = \App\Models\Laboratory::where('status', 'active')->orderBy('id')->get();
                 return $labs->count() > 1 ? $labs->first()->name . ' - ' . $labs->last()->name : 'Semua Labkom';
             }) : optional($changeRequest->requestedLaboratory)->name;
-            $detailText = "Pindah ke Labkom: {$newLab}";
+            $detailText = "Labkom Awal: {$oldLab}\nLabkom Tujuan: {$newLab}";
         }
 
         $trackUrl = secure_url('/track/' . $booking->tracking_code);
