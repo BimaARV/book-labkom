@@ -34,11 +34,9 @@
             $detailText = "{$date} | {$time}";
         } elseif ($changeRequest->type === 'relocation') {
             $typeLabel = 'Pindah Labkom';
-            $newLab = $changeRequest->requested_is_all_labs ? \Illuminate\Support\Facades\Cache::remember('all_labs_name', 3600, function () {
-                $labs = \App\Models\Laboratory::where('status', 'active')->orderBy('id')->get();
-                return $labs->count() > 1 ? $labs->first()->name . ' - ' . $labs->last()->name : 'Semua Labkom';
-            }) : optional($changeRequest->requestedLaboratory)->name;
-            $detailText = $newLab;
+            $oldLab = $changeRequest->booking->lab_name;
+            $newLab = $changeRequest->requested_is_all_labs ? \App\Models\Laboratory::getAllLabsName() : optional($changeRequest->requestedLaboratory)->name;
+            $detailText = "Dari: {$oldLab} \nMenjadi: {$newLab}";
         }
     @endphp
 
@@ -66,7 +64,7 @@
                 </tr>
                 <tr>
                     <th>Detail Perubahan</th>
-                    <td>{{ $detailText }}</td>
+                    <td>{!! nl2br(e($detailText)) !!}</td>
                 </tr>
                 <tr>
                     <th>Diproses Oleh</th>

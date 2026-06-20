@@ -48,7 +48,7 @@
                                     Waktu: <strong>{{ \Carbon\Carbon::parse($req->requested_start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($req->requested_end_time)->format('H:i') }}</strong>
                                 @elseif($req->type == 'relocation')
                                     Lab Awal: <br><strong>{{ $req->booking->lab_name }}</strong><br>
-                                    Lab Tujuan: <br><strong>{{ $req->requested_is_all_labs ? 'Semua Labkom' : optional($req->requestedLaboratory)->name }}</strong>
+                                    Lab Tujuan: <br><strong>{{ $req->requested_is_all_labs ? \App\Models\Laboratory::getAllLabsName() : optional($req->requestedLaboratory)->name }}</strong>
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif

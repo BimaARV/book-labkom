@@ -96,10 +96,7 @@ class NotificationService
         } elseif ($changeRequest->type === 'relocation') {
             $typeLabel = 'Pindah Labkom';
             $oldLab = $booking->lab_name;
-            $newLab = $changeRequest->requested_is_all_labs ? \Illuminate\Support\Facades\Cache::remember('all_labs_name', 3600, function () {
-                $labs = \App\Models\Laboratory::where('status', 'active')->orderBy('id')->get();
-                return $labs->count() > 1 ? $labs->first()->name . ' - ' . $labs->last()->name : 'Semua Labkom';
-            }) : optional($changeRequest->requestedLaboratory)->name;
+            $newLab = $changeRequest->requested_is_all_labs ? \App\Models\Laboratory::getAllLabsName() : optional($changeRequest->requestedLaboratory)->name;
             $detailText = "Labkom Awal: {$oldLab}\nLabkom Tujuan: {$newLab}";
         }
 
@@ -147,10 +144,7 @@ class NotificationService
         } elseif ($changeRequest->type === 'relocation') {
             $typeLabel = 'Pindah Labkom';
             $oldLab = $booking->lab_name;
-            $newLab = $changeRequest->requested_is_all_labs ? \Illuminate\Support\Facades\Cache::remember('all_labs_name', 3600, function () {
-                $labs = \App\Models\Laboratory::where('status', 'active')->orderBy('id')->get();
-                return $labs->count() > 1 ? $labs->first()->name . ' - ' . $labs->last()->name : 'Semua Labkom';
-            }) : optional($changeRequest->requestedLaboratory)->name;
+            $newLab = $changeRequest->requested_is_all_labs ? \App\Models\Laboratory::getAllLabsName() : optional($changeRequest->requestedLaboratory)->name;
             $detailText = "Labkom Awal: {$oldLab}\nLabkom Tujuan: {$newLab}";
         }
 

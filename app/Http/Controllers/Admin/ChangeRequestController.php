@@ -36,20 +36,6 @@ class ChangeRequestController extends Controller
 
         if ($request->action === 'approve') {
             $changeRequest->status = 'approved';
-            
-            // Terapkan perubahan ke booking asli
-            if ($changeRequest->type === 'cancellation') {
-                $booking->status = 'cancelled';
-            } elseif ($changeRequest->type === 'reschedule') {
-                $booking->date = $changeRequest->requested_date;
-                $booking->start_time = $changeRequest->requested_start_time;
-                $booking->end_time = $changeRequest->requested_end_time;
-            } elseif ($changeRequest->type === 'relocation') {
-                $booking->laboratory_id = $changeRequest->requested_laboratory_id;
-                $booking->is_all_labs = $changeRequest->requested_is_all_labs;
-            }
-            // DO NOT save booking yet!
-
         } else {
             $changeRequest->status = 'rejected';
         }
@@ -67,6 +53,17 @@ class ChangeRequestController extends Controller
         }
 
         if ($request->action === 'approve') {
+            // Terapkan perubahan ke booking asli setelah notifikasi dikirim
+            if ($changeRequest->type === 'cancellation') {
+                $booking->status = 'cancelled';
+            } elseif ($changeRequest->type === 'reschedule') {
+                $booking->date = $changeRequest->requested_date;
+                $booking->start_time = $changeRequest->requested_start_time;
+                $booking->end_time = $changeRequest->requested_end_time;
+            } elseif ($changeRequest->type === 'relocation') {
+                $booking->laboratory_id = $changeRequest->requested_laboratory_id;
+                $booking->is_all_labs = $changeRequest->requested_is_all_labs;
+            }
             $booking->save();
         }
 

@@ -22,15 +22,9 @@ class Booking extends Model
     public function getLabNameAttribute()
     {
         if ($this->is_all_labs) {
-            return \Illuminate\Support\Facades\Cache::remember('all_labs_name', 3600, function () {
-                $labs = \App\Models\Laboratory::where('status', 'active')->orderBy('id')->get();
-                if ($labs->count() > 1) {
-                    return $labs->first()->name . ' - ' . $labs->last()->name;
-                }
-                return 'Semua Labkom';
-            });
+            return Laboratory::getAllLabsName();
         }
-        return optional($this->laboratory)->name;
+        return $this->laboratory ? $this->laboratory->name : '-';
     }
 
     public function businessUnit()

@@ -236,8 +236,8 @@ class BookingController extends Controller
 
                 // Fetch relation names for IDs
                 if ($key === 'laboratory_id') {
-                    $oldValue = $originalData['is_all_labs'] ?? false ? 'Semua Labkom' : (Laboratory::find($oldValue)->name ?? $oldValue);
-                    $newValue = $booking->is_all_labs ? 'Semua Labkom' : (Laboratory::find($newValue)->name ?? $newValue);
+                    $oldValue = $originalData['is_all_labs'] ?? false ? \App\Models\Laboratory::getAllLabsName() : (\App\Models\Laboratory::find($oldValue)->name ?? $oldValue);
+                    $newValue = $booking->is_all_labs ? \App\Models\Laboratory::getAllLabsName() : (\App\Models\Laboratory::find($newValue)->name ?? $newValue);
                 } elseif ($key === 'business_unit_id') {
                     $oldValue = BusinessUnit::find($oldValue)->name ?? $oldValue;
                     $newValue = BusinessUnit::find($newValue)->name ?? $newValue;
