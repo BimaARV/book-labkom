@@ -411,7 +411,7 @@ class NotificationService
             // WA to PIC
             if ($gatewayUrl && $booking->whatsapp) {
                 $messagePic = "Halo *{$booking->pic_name}*,\n\n";
-                $messagePic .= "Terdapat perubahan pada detail peminjaman Labkom Anda yang diproses oleh tim Admin. Berikut adalah data yang diperbarui:\n\n";
+                $messagePic .= "Terdapat perubahan pada detail peminjaman Labkom Anda yang diproses oleh tim IT Infrastructure. Berikut adalah data yang diperbarui:\n\n";
                 $messagePic .= "- " . implode("\n- ", $changes) . "\n\n";
                 $messagePic .= "*Detail Pemesanan Terkini:*\n";
                 $messagePic .= "Kode Booking: {$booking->tracking_code}\n";
