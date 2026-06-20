@@ -16,7 +16,7 @@
         <div class="card border-0 shadow-sm h-100 interactive-card">
             <div class="card-body">
                 <div class="d-flex align-items-center mb-3">
-                    <div class="bg-primary bg-opacity-10 p-3 rounded me-3 text-primary">
+                    <div class="bg-primary p-3 rounded me-3 text-white">
                         <i class="bi bi-grid-3x3-gap fs-4"></i>
                     </div>
                     <div>

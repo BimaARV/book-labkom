@@ -26,17 +26,17 @@
     $detailText = '';
     if ($changeRequest->type === 'cancellation') {
         $typeLabel = 'Pembatalan';
-        $detailText = "Labkom: {$changeRequest->original_lab_name}";
+        $detailText = "<ul style='margin:0; padding-left:20px;'><li>Alasan Pembatalan: {$changeRequest->reason}</li></ul>";
     } elseif ($changeRequest->type === 'reschedule') {
         $typeLabel = 'Perubahan Jadwal';
         $date = \Carbon\Carbon::parse($changeRequest->requested_date)->format('d M Y');
         $time = \Carbon\Carbon::parse($changeRequest->requested_start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($changeRequest->requested_end_time)->format('H:i');
-        $detailText = "Labkom: {$changeRequest->original_lab_name} \nJadwal Baru: {$date} | {$time}";
+        $detailText = "<ul style='margin:0; padding-left:20px;'><li>Labkom: {$changeRequest->original_lab_name}</li><li>Jadwal Baru: {$date} | {$time}</li></ul>";
     } elseif ($changeRequest->type === 'relocation') {
         $typeLabel = 'Pindah Labkom';
         $oldLab = $changeRequest->original_lab_name;
         $newLab = $changeRequest->requested_is_all_labs ? \App\Models\Laboratory::getAllLabsName() : optional($changeRequest->requestedLaboratory)->name;
-        $detailText = "Dari: {$oldLab} \nMenjadi: {$newLab}";
+        $detailText = "<ul style='margin:0; padding-left:20px;'><li>Dari: {$oldLab}</li><li>Menjadi: {$newLab}</li></ul>";
     }
 @endphp
 
@@ -55,12 +55,22 @@
 
             <table class="table-info">
                 <tr>
+                    <th>Pemohon</th>
+                    <td>
+                        <ul style="margin:0; padding-left:20px;">
+                            <li>Nama: {{ $changeRequest->booking->pic_name }}</li>
+                            <li>Email: {{ $changeRequest->booking->email }}</li>
+                            <li>Unit Bisnis: {{ optional($changeRequest->booking->businessUnit)->name }}</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
                     <th>Jenis Pengajuan</th>
                     <td>{{ $typeLabel }}</td>
                 </tr>
                 <tr>
                     <th>Detail Perubahan</th>
-                    <td>{!! nl2br(e($detailText)) !!}</td>
+                    <td>{!! $detailText !!}</td>
                 </tr>
                 <tr>
                     <th>Diproses Oleh</th>

@@ -87,22 +87,25 @@ class NotificationService
         $detailText = '';
         if ($changeRequest->type === 'cancellation') {
             $typeLabel = 'Pembatalan';
-            $detailText = "User ingin membatalkan peminjaman ini.";
+            $detailText = "- Alasan Pembatalan: {$changeRequest->reason}";
         } elseif ($changeRequest->type === 'reschedule') {
             $typeLabel = 'Perubahan Jadwal';
             $date = \Carbon\Carbon::parse($changeRequest->requested_date)->format('d M Y');
             $time = \Carbon\Carbon::parse($changeRequest->requested_start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($changeRequest->requested_end_time)->format('H:i');
-            $detailText = "Jadwal Baru: {$date} | {$time}";
+            $detailText = "- Jadwal Baru: {$date} | {$time}";
         } elseif ($changeRequest->type === 'relocation') {
             $typeLabel = 'Pindah Labkom';
             $oldLab = $changeRequest->original_lab_name;
             $newLab = $changeRequest->requested_is_all_labs ? \App\Models\Laboratory::getAllLabsName() : optional($changeRequest->requestedLaboratory)->name;
-            $detailText = "Labkom Awal: {$oldLab}\nLabkom Tujuan: {$newLab}";
+            $detailText = "- Labkom Awal: {$oldLab}\n- Labkom Tujuan: {$newLab}";
         }
 
         $message = "⚠️ *PENGAJUAN PERUBAHAN BOOKING*\n\n";
         $message .= "Kode Booking: {$booking->tracking_code}\n";
-        $message .= "Pemohon: *{$booking->pic_name}*\n";
+        $message .= "Pemohon:\n";
+        $message .= "- Nama: *{$booking->pic_name}*\n";
+        $message .= "- Email: {$booking->email}\n";
+        $message .= "- Unit Bisnis: " . optional($booking->businessUnit)->name . "\n\n";
         $message .= "Lab Awal: {$labName}\n";
         $message .= "Jenis Pengajuan: *{$typeLabel}*\n";
         $message .= "Alasan: {$changeRequest->reason}\n\n";
@@ -135,17 +138,17 @@ class NotificationService
         $detailText = '';
         if ($changeRequest->type === 'cancellation') {
             $typeLabel = 'Pembatalan';
-            $detailText = "-";
+            $detailText = "- Labkom: {$changeRequest->original_lab_name}";
         } elseif ($changeRequest->type === 'reschedule') {
             $typeLabel = 'Perubahan Jadwal';
             $date = \Carbon\Carbon::parse($changeRequest->requested_date)->format('d M Y');
             $time = \Carbon\Carbon::parse($changeRequest->requested_start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($changeRequest->requested_end_time)->format('H:i');
-            $detailText = "{$date} | {$time}";
+            $detailText = "- Labkom: {$changeRequest->original_lab_name}\n- Jadwal Baru: {$date} | {$time}";
         } elseif ($changeRequest->type === 'relocation') {
             $typeLabel = 'Pindah Labkom';
             $oldLab = $changeRequest->original_lab_name;
             $newLab = $changeRequest->requested_is_all_labs ? \App\Models\Laboratory::getAllLabsName() : optional($changeRequest->requestedLaboratory)->name;
-            $detailText = "Labkom Awal: {$oldLab}\nLabkom Tujuan: {$newLab}";
+            $detailText = "- Labkom Awal: {$oldLab}\n- Labkom Tujuan: {$newLab}";
         }
 
         $trackUrl = secure_url('/track/' . $booking->tracking_code);
@@ -153,9 +156,13 @@ class NotificationService
         // WA Message for Group
         $messageGroup = "⚠️ *HASIL PENGAJUAN PERUBAHAN BOOKING*\n\n";
         $messageGroup .= "Kode Booking: {$booking->tracking_code}\n";
-        $messageGroup .= "Pengajuan perubahan untuk *{$booking->pic_name}* telah {$statusText} oleh *{$admin->name}*.\n\n";
+        $messageGroup .= "Pengajuan perubahan telah {$statusText} oleh *{$admin->name}*.\n\n";
+        $messageGroup .= "Pemohon:\n";
+        $messageGroup .= "- Nama: *{$booking->pic_name}*\n";
+        $messageGroup .= "- Email: {$booking->email}\n";
+        $messageGroup .= "- Unit Bisnis: " . optional($booking->businessUnit)->name . "\n\n";
         $messageGroup .= "Jenis: {$typeLabel}\n";
-        $messageGroup .= "Detail: {$detailText}\n";
+        $messageGroup .= "Detail:\n{$detailText}\n";
         $messageGroup .= "Catatan Admin: " . ($changeRequest->admin_note ?? '-') . "\n\n";
         $messageGroup .= "Cek Detail: {$trackUrl}";
 
@@ -163,8 +170,12 @@ class NotificationService
         $messageUser = "Halo *{$booking->pic_name}*,\n\n";
         $messageUser .= "Pengajuan perubahan booking Anda telah {$statusText}.\n\n";
         $messageUser .= "Kode Booking: {$booking->tracking_code}\n";
+        $messageUser .= "Pemohon:\n";
+        $messageUser .= "- Nama: *{$booking->pic_name}*\n";
+        $messageUser .= "- Email: {$booking->email}\n";
+        $messageUser .= "- Unit Bisnis: " . optional($booking->businessUnit)->name . "\n\n";
         $messageUser .= "Jenis: {$typeLabel}\n";
-        $messageUser .= "Detail: {$detailText}\n";
+        $messageUser .= "Detail:\n{$detailText}\n";
         $messageUser .= "Diproses oleh: {$admin->name}\n";
         if (!empty($changeRequest->admin_note)) {
             $messageUser .= "Catatan Admin: {$changeRequest->admin_note}\n";
