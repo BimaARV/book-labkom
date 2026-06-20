@@ -22,21 +22,22 @@
         $statusClass = $changeRequest->status === 'approved' ? 'status-approved' : 'status-rejected';
         $statusText = $changeRequest->status === 'approved' ? 'DISETUJUI' : 'DITOLAK';
         
+        $labName = $changeRequest->booking->lab_name;
+        
         $typeLabel = '';
         $detailText = '';
         if ($changeRequest->type === 'cancellation') {
             $typeLabel = 'Pembatalan';
-            $detailText = "-";
+            $detailText = "Labkom: {$labName}";
         } elseif ($changeRequest->type === 'reschedule') {
             $typeLabel = 'Perubahan Jadwal';
             $date = \Carbon\Carbon::parse($changeRequest->requested_date)->format('d M Y');
             $time = \Carbon\Carbon::parse($changeRequest->requested_start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($changeRequest->requested_end_time)->format('H:i');
-            $detailText = "{$date} | {$time}";
+            $detailText = "Labkom: {$labName} \nJadwal Baru: {$date} | {$time}";
         } elseif ($changeRequest->type === 'relocation') {
             $typeLabel = 'Pindah Labkom';
-            $oldLab = $changeRequest->booking->lab_name;
             $newLab = $changeRequest->requested_is_all_labs ? \App\Models\Laboratory::getAllLabsName() : optional($changeRequest->requestedLaboratory)->name;
-            $detailText = "Dari: {$oldLab} \nMenjadi: {$newLab}";
+            $detailText = "Dari: {$labName} \nMenjadi: {$newLab}";
         }
     @endphp
 
@@ -54,10 +55,6 @@
             </div>
 
             <table class="table-info">
-                <tr>
-                    <th>Labkom Awal</th>
-                    <td>{{ $changeRequest->booking->lab_name }}</td>
-                </tr>
                 <tr>
                     <th>Jenis Pengajuan</th>
                     <td>{{ $typeLabel }}</td>

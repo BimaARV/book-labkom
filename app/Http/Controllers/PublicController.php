@@ -119,6 +119,8 @@ class PublicController extends Controller
             }
             $data['requested_laboratory_id'] = $request->requested_laboratory_id === 'all' ? null : $request->requested_laboratory_id;
             $data['requested_is_all_labs'] = $request->requested_laboratory_id === 'all';
+            $data['original_laboratory_id'] = $booking->laboratory_id;
+            $data['original_is_all_labs'] = $booking->is_all_labs;
         }
 
         $changeReq = \App\Models\BookingChangeRequest::create($data);

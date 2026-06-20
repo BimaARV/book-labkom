@@ -21,4 +21,21 @@ class BookingChangeRequest extends Model
     {
         return $this->belongsTo(Laboratory::class, 'requested_laboratory_id');
     }
+
+    public function originalLaboratory()
+    {
+        return $this->belongsTo(Laboratory::class, 'original_laboratory_id');
+    }
+
+    public function getOriginalLabNameAttribute()
+    {
+        if ($this->original_is_all_labs) {
+            return Laboratory::getAllLabsName();
+        }
+        if ($this->original_laboratory_id) {
+            return $this->originalLaboratory ? $this->originalLaboratory->name : '-';
+        }
+        // Fallback for older data
+        return $this->booking ? $this->booking->lab_name : '-';
+    }
 }
