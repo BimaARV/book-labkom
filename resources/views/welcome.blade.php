@@ -29,12 +29,24 @@
     @endif
 
     @if(session('error'))
-        <div class="row justify-content-center mb-4">
-            <div class="col-lg-8">
-                <div class="alert alert-danger d-flex align-items-center alert-dismissible fade show shadow-sm" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
-                    <div>{{ session('error') }}</div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <!-- Error Modal -->
+        <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-danger text-white border-bottom-0">
+                        <h5 class="modal-title fw-bold" id="errorModalLabel"><i class="bi bi-exclamation-triangle-fill me-2"></i> Peringatan</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 text-center">
+                        <div class="text-danger mb-3">
+                            <i class="bi bi-x-circle" style="font-size: 3.5rem;"></i>
+                        </div>
+                        <h4 class="fw-bold text-body mb-2">Pemberitahuan</h4>
+                        <p class="fs-5 text-muted-custom mb-0">{{ session('error') }}</p>
+                    </div>
+                    <div class="modal-footer border-top-0 justify-content-center pb-4">
+                        <button type="button" class="btn btn-danger px-4 py-2 rounded-pill" data-bs-dismiss="modal">Tutup</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -258,6 +270,15 @@
 </div>
 
 @push('scripts')
+    @if(session('error'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+            errorModal.show();
+        });
+    </script>
+    @endif
+
     <script>
         // Data Business Units beserta Sub Units
         const businessUnitsData = @json($businessUnits->keyBy('id'));

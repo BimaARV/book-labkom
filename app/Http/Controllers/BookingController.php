@@ -47,7 +47,7 @@ class BookingController extends Controller
                 }
             }
             if (!$isAllowed) {
-                return back()->with('error', 'Email tersebut tidak ada di database kami, mohon untuk gunakan email Binawan')->withInput();
+                return back()->with('error', 'Mohon Untuk Menggunakan Email Binawan.')->withInput();
             }
         }
 
