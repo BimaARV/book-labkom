@@ -202,16 +202,13 @@
 
     function promptReject(actionUrl) {
         Swal.fire({
-            title: '<h4 class="fw-bold mb-0 text-danger"><i class="bi bi-x-circle me-2"></i>Tolak Booking</h4>',
-            background: 'var(--bs-body-bg, #fff)',
-            color: 'var(--bs-body-color, #000)',
+            title: 'Tolak Booking',
             text: 'Masukkan alasan penolakan:',
             input: 'text',
             inputPlaceholder: 'Contoh: Lab sedang digunakan untuk ujian...',
             showCancelButton: true,
-            confirmButtonText: 'Tolak Booking',
-            cancelButtonText: 'Batal',
-            buttonsStyling: false,
+            confirmButtonText: '<i class="bi bi-check-circle me-1"></i> Ya, Tolak',
+            cancelButtonText: 'Tutup',
             customClass: {
                 confirmButton: 'btn btn-danger',
                 cancelButton: 'btn btn-secondary ms-2'
@@ -233,16 +230,13 @@
 
     function promptCancel(actionUrl) {
         Swal.fire({
-            title: '<h4 class="fw-bold mb-0 text-danger"><i class="bi bi-slash-circle me-2"></i>Batalkan Booking</h4>',
-            background: 'var(--bs-body-bg, #fff)',
-            color: 'var(--bs-body-color, #000)',
+            title: 'Batalkan Booking',
             text: 'Masukkan alasan pembatalan:',
             input: 'text',
             inputPlaceholder: 'Contoh: Terjadi perubahan jadwal mendadak...',
             showCancelButton: true,
-            confirmButtonText: 'Batalkan Booking',
-            cancelButtonText: 'Kembali',
-            buttonsStyling: false,
+            confirmButtonText: '<i class="bi bi-check-circle me-1"></i> Ya, Batalkan',
+            cancelButtonText: 'Tutup',
             customClass: {
                 confirmButton: 'btn btn-warning',
                 cancelButton: 'btn btn-secondary ms-2'

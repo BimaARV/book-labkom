@@ -238,6 +238,8 @@ body {
     padding: 0 !important;
     border-radius: 0.5rem !important;
     overflow: hidden;
+    background-color: var(--card-bg) !important;
+    color: var(--bs-body-color) !important;
 }
 .swal2-header {
     background-color: var(--bs-primary) !important;
@@ -267,6 +269,7 @@ body {
     padding: 1.5rem !important;
     text-align: left !important;
     font-size: 1rem !important;
+    color: var(--bs-body-color) !important;
 }
 .swal2-actions {
     padding: 1rem 1.5rem !important;
@@ -274,6 +277,11 @@ body {
     background-color: transparent !important;
     border-top: 1px solid rgba(0,0,0,0.1) !important;
     justify-content: flex-end !important;
+}
+.swal2-input, .swal2-textarea {
+    color: var(--bs-body-color) !important;
+    background-color: var(--bs-body-bg) !important;
+    border-color: var(--border-color) !important;
 }
 
 /* SweetAlert2 Dark Mode */
