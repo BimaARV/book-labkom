@@ -105,13 +105,15 @@ class NotificationService
             $businessUnitText .= ' - ' . $booking->subBusinessUnit->name;
         }
 
+        $labLabel = $changeRequest->type === 'relocation' ? 'Lab Awal' : 'Labkom saat ini';
+
         $message = "⚠️ *PENGAJUAN PERUBAHAN BOOKING*\n\n";
         $message .= "Kode Booking: {$booking->tracking_code}\n";
         $message .= "Pemohon:\n";
         $message .= "- Nama: *{$booking->pic_name}*\n";
         $message .= "- Email: {$booking->email}\n";
         $message .= "- Unit Bisnis: {$businessUnitText}\n\n";
-        $message .= "Lab Awal: {$labName}\n";
+        $message .= "{$labLabel}: {$labName}\n";
         $message .= "Jenis Pengajuan: *{$typeLabel}*\n";
         $message .= "Alasan: {$changeRequest->reason}\n\n";
         $message .= "Detail Pengajuan:\n{$detailText}\n\n";
@@ -138,17 +140,20 @@ class NotificationService
 
         $booking = $changeRequest->booking;
         $statusText = $changeRequest->status === 'approved' ? '*DISETUJUI*' : '*DITOLAK*';
+        if ($changeRequest->type === 'cancellation') {
+            $statusText = $changeRequest->status === 'approved' ? '*DITERIMA*' : '*DITOLAK*';
+        }
         
         $typeLabel = '';
         $detailText = '';
         if ($changeRequest->type === 'cancellation') {
             $typeLabel = 'Pembatalan';
-            $detailText = "- Labkom: {$changeRequest->original_lab_name}";
+            $detailText = "- Alasan Pembatalan: {$changeRequest->reason}";
         } elseif ($changeRequest->type === 'reschedule') {
             $typeLabel = 'Perubahan Jadwal';
             $date = \Carbon\Carbon::parse($changeRequest->requested_date)->format('d M Y');
             $time = \Carbon\Carbon::parse($changeRequest->requested_start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($changeRequest->requested_end_time)->format('H:i');
-            $detailText = "- Labkom: {$changeRequest->original_lab_name}\n- Jadwal Baru: {$date} | {$time}";
+            $detailText = "- Jadwal Baru: {$date} | {$time}";
         } elseif ($changeRequest->type === 'relocation') {
             $typeLabel = 'Pindah Labkom';
             $oldLab = $changeRequest->original_lab_name;
@@ -163,10 +168,18 @@ class NotificationService
             $businessUnitText .= ' - ' . $booking->subBusinessUnit->name;
         }
 
+        $actionTextGroup = $changeRequest->type === 'cancellation' 
+            ? "Permintaan Pembatalan telah {$statusText} oleh IT Infrastructure *{$admin->name}*.\n\n"
+            : "Pengajuan perubahan telah {$statusText} oleh IT Infrastructure *{$admin->name}*.\n\n";
+        
+        $actionTextUser = $changeRequest->type === 'cancellation'
+            ? "Permintaan Pembatalan booking Anda telah {$statusText}.\n\n"
+            : "Pengajuan perubahan booking Anda telah {$statusText}.\n\n";
+
         // WA Message for Group
         $messageGroup = "⚠️ *HASIL PENGAJUAN PERUBAHAN BOOKING*\n\n";
         $messageGroup .= "Kode Booking: {$booking->tracking_code}\n";
-        $messageGroup .= "Pengajuan perubahan telah {$statusText} oleh *{$admin->name}*.\n\n";
+        $messageGroup .= $actionTextGroup;
         $messageGroup .= "Pemohon:\n";
         $messageGroup .= "- Nama: *{$booking->pic_name}*\n";
         $messageGroup .= "- Email: {$booking->email}\n";
@@ -178,7 +191,7 @@ class NotificationService
 
         // WA Message for User
         $messageUser = "Halo *{$booking->pic_name}*,\n\n";
-        $messageUser .= "Pengajuan perubahan booking Anda telah {$statusText}.\n\n";
+        $messageUser .= $actionTextUser;
         $messageUser .= "Kode Booking: {$booking->tracking_code}\n";
         $messageUser .= "Pemohon:\n";
         $messageUser .= "- Nama: *{$booking->pic_name}*\n";

@@ -21,6 +21,9 @@
 @php
     $statusClass = $changeRequest->status === 'approved' ? 'status-approved' : 'status-rejected';
     $statusText = $changeRequest->status === 'approved' ? 'DISETUJUI' : 'DITOLAK';
+    if ($changeRequest->type === 'cancellation') {
+        $statusText = $changeRequest->status === 'approved' ? 'DITERIMA' : 'DITOLAK';
+    }
     
     $typeLabel = '';
     $detailText = '';
@@ -31,7 +34,7 @@
         $typeLabel = 'Perubahan Jadwal';
         $date = \Carbon\Carbon::parse($changeRequest->requested_date)->format('d M Y');
         $time = \Carbon\Carbon::parse($changeRequest->requested_start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($changeRequest->requested_end_time)->format('H:i');
-        $detailText = "<ul style='margin:0; padding-left:20px;'><li>Labkom: {$changeRequest->original_lab_name}</li><li>Jadwal Baru: {$date} | {$time}</li></ul>";
+        $detailText = "<ul style='margin:0; padding-left:20px;'><li>Jadwal Baru: {$date} | {$time}</li></ul>";
     } elseif ($changeRequest->type === 'relocation') {
         $typeLabel = 'Pindah Labkom';
         $oldLab = $changeRequest->original_lab_name;
@@ -47,7 +50,11 @@
         
         <div class="content">
             <p>Halo <strong>{{ $changeRequest->booking->pic_name }}</strong>,</p>
-            <p>Pengajuan perubahan untuk booking Labkom Anda telah diproses oleh tim IT Infrastructure dengan hasil:</p>
+            @if($changeRequest->type === 'cancellation')
+                <p>Permintaan pembatalan untuk booking Labkom Anda telah diproses oleh tim IT Infrastructure dengan hasil:</p>
+            @else
+                <p>Pengajuan perubahan untuk booking Labkom Anda telah diproses oleh tim IT Infrastructure dengan hasil:</p>
+            @endif
             
             <div style="text-align: center; margin: 20px 0;">
                 <span class="status-badge {{ $statusClass }}">{{ $statusText }}</span>
