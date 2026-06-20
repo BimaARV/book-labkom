@@ -88,17 +88,20 @@
                                         
                                         @if($hasPc)
                                             @if($pcData->status == 'kosong')
-                                                <i class="bi bi-square-dotted fs-3 mb-1 {{ $textColor }}"></i>
+                                                <i class="bi bi-square-dotted fs-1 mb-2 {{ $textColor }}"></i>
                                             @else
-                                                <i class="bi bi-pc-display fs-3 mb-1 {{ $textColor }}"></i>
+                                                <i class="bi bi-pc-display fs-1 mb-2 {{ $textColor }}"></i>
                                             @endif
-                                            <div class="fw-bold text-truncate w-100 {{ $textColor }}" style="font-size: 0.9rem;">{{ $pcData->name }}</div>
+                                            <div class="fw-bold text-truncate w-100 {{ $textColor }}" style="font-size: 1.1rem;">{{ $pcData->name }}</div>
                                             @if($pcData->ip_address)
-                                                <div class="small text-truncate w-100 {{ $textColor }}" style="font-size: 0.75rem; opacity: 0.9;">{{ $pcData->ip_address }}</div>
+                                                <div class="text-truncate w-100 mt-1 {{ $textColor }}" style="font-size: 0.85rem; opacity: 0.9;">{{ $pcData->ip_address }}</div>
+                                            @endif
+                                            @if($pcData->mac_address)
+                                                <div class="text-truncate w-100 {{ $textColor }}" style="font-size: 0.85rem; opacity: 0.9;">{{ $pcData->mac_address }}</div>
                                             @endif
                                         @else
-                                            <i class="bi bi-plus-lg fs-3 text-muted opacity-50"></i>
-                                            <div class="text-muted opacity-50" style="font-size: 0.85rem;">Tambah</div>
+                                            <i class="bi bi-plus-lg fs-2 text-muted opacity-50 mb-1"></i>
+                                            <div class="text-muted opacity-50 fw-medium" style="font-size: 1rem;">Tambah</div>
                                         @endif
                                         
                                     </div>
