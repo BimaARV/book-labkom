@@ -90,6 +90,11 @@ class PublicController extends Controller
         ]);
 
         $booking = Booking::findOrFail($request->booking_id);
+        // Verifikasi kepemilikan booking
+$request->validate(['email' => 'required|email']);
+if (strtolower($booking->email) !== strtolower($request->email)) {
+    return back()->with('error', 'Anda tidak berhak mengajukan perubahan untuk booking ini.');
+}
         
         if ($booking->changeRequests()->where('status', 'pending')->exists()) {
             return back()->with('error', 'Anda sudah memiliki pengajuan perubahan yang sedang diproses untuk booking ini.');

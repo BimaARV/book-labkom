@@ -7,7 +7,7 @@
         <div class="col-lg-8">
             <div class="text-center mb-5">
                 <h2 class="fw-bold mb-3">Cek Booking Saya</h2>
-                <p class="text-muted-custom">Masukkan email atau kode booking Anda untuk melihat status pemesanan</p>
+                <p class="text-muted-custom">Masukkan email atau kode booking Anda untuk melihat status peminjaman</p>
             </div>
 
             <div class="card border-0 shadow-lg interactive-card p-3 p-md-4">
@@ -115,6 +115,7 @@
               </div>
             <form action="{{ route('booking.change-request') }}" method="POST">
                 @csrf
+                <input type="hidden" name="email" value="{{ $search }}">
                 <div class="modal-body">
                     <input type="hidden" name="booking_id" id="change_booking_id">
                     
