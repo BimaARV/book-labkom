@@ -125,7 +125,13 @@
                                           @endif
                                       </div>
                                   </td>
-                                  <td>{{ optional($booking->laboratory)->name }}</td>
+                                  <td>
+                                      @if($booking->is_all_labs)
+                                          {{ \App\Models\Laboratory::getAllLabsName() }}
+                                      @else
+                                          {{ optional($booking->laboratory)->name }}
+                                      @endif
+                                  </td>
                                   <td>
                                       <div class="small fw-medium text-primary">{{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }}</div>
                                       <div class="small">{{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}</div>
@@ -149,8 +155,9 @@
                                         if($booking->subBusinessUnit) {
                                             $instansi .= ' (' . $booking->subBusinessUnit->name . ')';
                                         }
+                                        $labName = $booking->is_all_labs ? \App\Models\Laboratory::getAllLabsName() : optional($booking->laboratory)->name;
                                       @endphp
-                                      <button type="button" class="btn btn-sm btn-primary" title="Detail" onclick="showDetail('{{ addslashes($booking->pic_name) }}', '{{ addslashes($instansi) }}', '{{ $booking->whatsapp }}', '{{ $booking->email }}', '{{ optional($booking->laboratory)->name }}', '{{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }}', '{{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}', '{{ addslashes($booking->purpose) }}')"><i class="bi bi-eye"></i></button>
+                                      <button type="button" class="btn btn-sm btn-primary" title="Detail" onclick="showDetail('{{ addslashes($booking->pic_name) }}', '{{ addslashes($instansi) }}', '{{ $booking->whatsapp }}', '{{ $booking->email }}', '{{ addslashes($labName) }}', '{{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }}', '{{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}', '{{ addslashes($booking->purpose) }}')"><i class="bi bi-eye"></i></button>
                                   </td>
                               </tr>
                             @empty
