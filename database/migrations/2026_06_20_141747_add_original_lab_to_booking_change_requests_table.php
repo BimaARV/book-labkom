@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('booking_change_requests', function (Blueprint $table) {
-            $table->foreignId('original_laboratory_id')->nullable()->constrained('laboratories')->onDelete('set null');
-            $table->boolean('original_is_all_labs')->default(false);
+            if (!Schema::hasColumn('booking_change_requests', 'original_laboratory_id')) {
+                $table->foreignId('original_laboratory_id')->nullable()->constrained('laboratories')->onDelete('set null');
+            }
+            if (!Schema::hasColumn('booking_change_requests', 'original_is_all_labs')) {
+                $table->boolean('original_is_all_labs')->default(false);
+            }
         });
     }
 

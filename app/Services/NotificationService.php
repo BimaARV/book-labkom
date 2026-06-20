@@ -95,7 +95,7 @@ class NotificationService
             $detailText = "Jadwal Baru: {$date} | {$time}";
         } elseif ($changeRequest->type === 'relocation') {
             $typeLabel = 'Pindah Labkom';
-            $oldLab = $booking->lab_name;
+            $oldLab = $changeRequest->original_lab_name;
             $newLab = $changeRequest->requested_is_all_labs ? \App\Models\Laboratory::getAllLabsName() : optional($changeRequest->requestedLaboratory)->name;
             $detailText = "Labkom Awal: {$oldLab}\nLabkom Tujuan: {$newLab}";
         }
