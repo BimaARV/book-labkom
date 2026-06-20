@@ -69,11 +69,7 @@
                                     <button class="btn btn-sm btn-success" title="Setujui" onclick="openProcessModal({{ $req->id }}, 'approve')"><i class="bi bi-check-lg"></i></button>
                                     <button class="btn btn-sm btn-danger" title="Tolak" onclick="openProcessModal({{ $req->id }}, 'reject')"><i class="bi bi-x-lg"></i></button>
                                 @endif
-                                <form action="{{ route('admin.change-requests.destroy', $req->id) }}" method="POST" class="m-0 p-0" onsubmit="return confirm('Yakin ingin menghapus riwayat pengajuan ini?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus Data"><i class="bi bi-trash"></i></button>
-                                </form>
+                                <button type="button" class="btn btn-sm btn-outline-danger" title="Hapus Data" onclick="openDeleteModal({{ $req->id }})"><i class="bi bi-trash"></i></button>
                             </div>
                         </td>
                     </tr>
@@ -139,6 +135,29 @@
     </div>
 </div>
 
+<!-- Modal Hapus -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <form id="deleteForm" method="POST">
+                @csrf
+                @method('DELETE')
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>Hapus Riwayat</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Yakin ingin menghapus riwayat pengajuan ini? Tindakan ini tidak dapat dibatalkan.</p>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Ya, Hapus</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -178,6 +197,11 @@
         }
 
         new bootstrap.Modal(document.getElementById('processModal')).show();
+    }
+
+    function openDeleteModal(id) {
+        document.getElementById('deleteForm').action = `/admin/change-requests/${id}`;
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
     }
 </script>
 @endpush
