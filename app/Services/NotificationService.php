@@ -273,7 +273,7 @@ class NotificationService
         $adminName = $booking->handled_by ?? 'Admin';
         $trackUrl = secure_url('/track/' . $booking->tracking_code);
 
-        $dataTerkini = "*Detail Pemesanan:*\n";
+        $dataTerkini = "*Detail Peminjaman:*\n";
         $dataTerkini .= "Instansi: {$instansi}\n";
         $dataTerkini .= "Labkom: {$labName}\n";
         $dataTerkini .= "Tanggal: {$date}\n";

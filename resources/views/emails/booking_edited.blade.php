@@ -83,7 +83,7 @@
                 </ul>
             </div>
 
-            <p><strong>Detail Pemesanan Terkini:</strong></p>
+            <p><strong>Detail Peminjaman Terkini:</strong></p>
             <table class="details-table">
                 <tr>
                     <th>Instansi</th>

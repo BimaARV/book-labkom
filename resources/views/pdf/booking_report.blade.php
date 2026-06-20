@@ -38,7 +38,7 @@
             <td>{{ $booking->tracking_code }}</td>
         </tr>
         <tr>
-            <th>PIC Pemesan</th>
+            <th>PIC Peminjam</th>
             <td>
                 {{ $booking->pic_name }}<br>
                 <small style="color: #666; font-size: 12px;">{{ $booking->whatsapp }} | {{ $booking->email }}</small>
