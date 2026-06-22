@@ -91,13 +91,13 @@
                                 <span class="input-group-text"><i class="bi bi-door-open"></i></span>
                                 <select class="form-select" id="laboratory_id" name="laboratory_id" required>
                                     <option value="">-- Pilih Labkom --</option>
-                                    <option value="all" {{ old('laboratory_id') == 'all' ? 'selected' : '' }}>Pilih Semua Labkom</option>
+                                    <option value="all" {{ old('laboratory_id', request('lab_id')) == 'all' ? 'selected' : '' }}>Pilih Semua Labkom</option>
                                     @foreach($laboratories as $lab)
                                         @php
                                             $totalMapped = $lab->labPcs->count();
                                             $available = $totalMapped > 0 ? $lab->labPcs->where('status', 'active')->count() : $lab->capacity;
                                         @endphp
-                                        <option value="{{ $lab->id }}" {{ old('laboratory_id') == $lab->id ? 'selected' : '' }}>{{ $lab->name }} ({{ $available }} PC Tersedia)</option>
+                                        <option value="{{ $lab->id }}" {{ old('laboratory_id', request('lab_id')) == $lab->id ? 'selected' : '' }}>{{ $lab->name }} ({{ $available }} PC Tersedia)</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -108,7 +108,7 @@
                             <label for="date" class="form-label fw-medium">Tanggal <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
-                                <input type="date" name="date" class="form-control" id="date" value="{{ old('date') }}" min="{{ date('Y-m-d') }}" required>
+                                <input type="date" name="date" class="form-control" id="date" value="{{ old('date', request('date')) }}" min="{{ date('Y-m-d') }}" required>
                             </div>
                         </div>
 

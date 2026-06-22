@@ -69,7 +69,7 @@
                             </div>
                         </div>
                         <div class="card-footer bg-transparent border-top-0 pb-4">
-                            <a href="{{ url('/') }}?lab_id={{ $lab->id }}&date={{ $date }}" class="btn btn-primary w-100">Booking Lab Ini</a>
+                            <a href="{{ url('/') }}?lab_id={{ $lab->id }}&date={{ $date }}#bookingForm" class="btn btn-primary w-100">Booking Lab Ini</a>
                         </div>
                     </div>
                 </div>
