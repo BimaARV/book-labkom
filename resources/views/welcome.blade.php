@@ -203,7 +203,11 @@
                             <label for="email" class="form-label fw-medium">Email <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                                <input type="email" name="email" class="form-control" id="email" placeholder="email@binawan.ac.id" value="{{ old('email') }}" required>
+                                <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" id="email" placeholder="email@binawan.ac.id" value="{{ old('email') }}" required>
+                                @error('email')
+                                    <div class="invalid-feedback">{!! $message !!}</div>
+                                    <script>document.addEventListener("DOMContentLoaded", function() { document.getElementById('email').focus(); });</script>
+                                @enderror
                             </div>
                         </div>
 
@@ -214,9 +218,18 @@
                         </div>
 
                         <!-- Captcha -->
-                        <div class="col-md-4 mt-4">
-                            <label for="captcha" class="form-label fw-medium">Berapa hasil dari {{ $num1 }} + {{ $num2 }}? <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" name="captcha" id="captcha" placeholder="Jawaban" required>
+                        <div class="col-md-6 mt-4">
+                            <label for="captcha" class="form-label fw-medium">Enter the CAPTCHA code <span class="text-danger">*</span></label>
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="me-3 border rounded p-1 bg-white">
+                                    <img src="{{ captcha_src() }}" id="captcha-img" alt="captcha" style="cursor: pointer;" onclick="document.getElementById('captcha-img').src = '{{ captcha_src() }}' + Math.random()">
+                                </div>
+                                <button type="button" class="btn btn-sm btn-link text-decoration-none fw-bold px-0" onclick="document.getElementById('captcha-img').src = '{{ captcha_src() }}' + Math.random()">Refresh code</button>
+                            </div>
+                            <input type="text" class="form-control @error('captcha') is-invalid @enderror" name="captcha" id="captcha" required>
+                            @error('captcha')
+                                <div class="invalid-feedback">The CAPTCHA code did not match. Please try again.</div>
+                            @enderror
                         </div>
 
                         <!-- Tombol Booking -->
@@ -247,7 +260,8 @@
                     <li>Pemohon bertanggung jawab atas penggunaan fasilitas Labkom selama periode booking.</li>
                     <li>Dilarang menginstal software atau mengubah konfigurasi perangkat tanpa izin pengelola.</li>
                     <li>Pemohon wajib menjaga kebersihan dan keamanan ruangan.</li>
-                    <li>Booking dapat dibatalkan apabila pemohon tidak hadir tanpa konfirmasi.</li>
+                    <li>PIC wajib menyerahkan kartu identitas saat ingin menggunakan Labkom.</li>
+                    <li>Booking akan kami batalkan jika dalam waktu 60 menit dari jadwal booking dimulai (tiap book-nya) PIC tidak konfirmasi kehadiran ke tim IT Infrastruktur (memberikan kartu identitas).</li>
                     <li>Kerusakan akibat kelalaian pengguna menjadi tanggung jawab pihak pemohon.</li>
                     <li>Tim IT Infrastructure berhak membatalkan request booking jika terdapat agenda kegiatan UKOM pada waktu yang bersamaan.</li>
                 </ul>

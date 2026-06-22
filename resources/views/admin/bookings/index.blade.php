@@ -148,10 +148,6 @@
                                 <button type="button" class="btn btn-sm btn-warning" title="Batalkan" onclick="promptCancel('{{ route('admin.bookings.update', $booking) }}')"><i class="bi bi-slash-circle"></i></button>
                                 @endif
                                 <a href="{{ route('admin.bookings.edit', $booking) }}" class="btn btn-sm btn-primary" title="Edit"><i class="bi bi-pencil"></i></a>
-                                <form action="{{ route('admin.bookings.destroy', $booking) }}" method="POST" class="m-0 p-0 delete-form">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus"><i class="bi bi-trash"></i></button>
-                                </form>
                             </div>
                         </td>
                     </tr>

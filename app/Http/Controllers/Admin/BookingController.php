@@ -127,6 +127,13 @@ class BookingController extends Controller
                 $notificationService->sendBookingStatusNotification($booking);
             }
 
+            \App\Models\ActivityLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'Update Status Booking',
+                'description' => "Mengubah status booking #{$booking->tracking_code} menjadi " . strtoupper($request->status),
+                'ip_address' => $request->ip()
+            ]);
+
             return back()->with('success', 'Status booking berhasil diperbarui.');
         }
 
@@ -275,20 +282,6 @@ class BookingController extends Controller
 
     public function destroy(Booking $booking)
     {
-        $bookingData = [
-            'pic_name' => $booking->pic_name,
-            'lab_name' => optional($booking->laboratory)->name,
-            'date' => \Carbon\Carbon::parse($booking->date)->format('d M Y'),
-            'time' => \Carbon\Carbon::parse($booking->start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($booking->end_time)->format('H:i')
-        ];
-        
-        $admin = Auth::user();
-        
-        $booking->delete();
-
-        $notificationService = new NotificationService();
-        $notificationService->sendBookingDeletedNotification($bookingData, $admin);
-
-        return back()->with('success', 'Data booking berhasil dihapus.');
+        return back()->with('error', 'Penghapusan booking telah dinonaktifkan.');
     }
 }

@@ -157,7 +157,20 @@
                                         }
                                         $labName = $booking->is_all_labs ? \App\Models\Laboratory::getAllLabsName() : optional($booking->laboratory)->name;
                                       @endphp
-                                      <button type="button" class="btn btn-sm btn-primary" title="Detail" onclick="showDetail('{{ addslashes($booking->pic_name) }}', '{{ addslashes($instansi) }}', '{{ $booking->whatsapp }}', '{{ $booking->email }}', '{{ addslashes($labName) }}', '{{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }}', '{{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}', '{{ addslashes($booking->purpose) }}')"><i class="bi bi-eye"></i></button>
+                                      <div class="d-flex justify-content-center gap-2 align-items-center">
+                                          @if($booking->status == 'pending')
+                                          <form action="{{ route('admin.bookings.update', $booking) }}" method="POST" class="m-0 p-0">
+                                              @csrf @method('PUT')
+                                              <input type="hidden" name="status" value="accepted">
+                                              <button type="submit" class="btn btn-sm btn-success accept-btn" title="Terima"><i class="bi bi-check-lg"></i></button>
+                                          </form>
+                                          <button type="button" class="btn btn-sm btn-danger reject-btn" title="Tolak" onclick="promptReject('{{ route('admin.bookings.update', $booking) }}')"><i class="bi bi-x-lg"></i></button>
+                                          @elseif($booking->status == 'accepted')
+                                          <button type="button" class="btn btn-sm btn-info text-dark accept-btn" title="Selesaikan" onclick="promptComplete('{{ route('admin.bookings.update', $booking) }}')"><i class="bi bi-check-all"></i></button>
+                                          <button type="button" class="btn btn-sm btn-warning" title="Batalkan" onclick="promptCancel('{{ route('admin.bookings.update', $booking) }}')"><i class="bi bi-slash-circle"></i></button>
+                                          @endif
+                                          <button type="button" class="btn btn-sm btn-primary" title="Detail" onclick="showDetail('{{ addslashes($booking->pic_name) }}', '{{ addslashes($instansi) }}', '{{ $booking->whatsapp }}', '{{ $booking->email }}', '{{ addslashes($labName) }}', '{{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }}', '{{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}', '{{ addslashes($booking->purpose) }}')"><i class="bi bi-eye"></i></button>
+                                      </div>
                                   </td>
                               </tr>
                             @empty
@@ -212,6 +225,22 @@
         </a>
     </div>
 </div>
+
+<!-- Hidden Forms for Actions -->
+<form id="rejectForm" method="POST" style="display: none;">
+    @csrf @method('PUT')
+    <input type="hidden" name="status" value="rejected">
+    <input type="hidden" name="rejection_reason" id="rejection_reason_input">
+</form>
+<form id="cancelForm" method="POST" style="display: none;">
+    @csrf @method('PUT')
+    <input type="hidden" name="status" value="cancelled">
+    <input type="hidden" name="rejection_reason" id="cancel_reason_input">
+</form>
+<form id="completeForm" method="POST" style="display: none;" enctype="multipart/form-data">
+    @csrf @method('PUT')
+    <input type="hidden" name="status" value="completed">
+</form>
 
 @push('scripts')
 <script>
@@ -417,6 +446,110 @@
                 }
             });
         }
+    }
+
+    function promptReject(url) {
+        Swal.fire({
+            title: 'Tolak Peminjaman?',
+            input: 'textarea',
+            inputLabel: 'Alasan Penolakan (Wajib)',
+            inputPlaceholder: 'Tuliskan alasan penolakan...',
+            inputAttributes: { required: 'true' },
+            showCancelButton: true,
+            confirmButtonText: 'Tolak',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#dc3545',
+            preConfirm: (reason) => {
+                if (!reason) { Swal.showValidationMessage('Alasan penolakan harus diisi!'); }
+                return reason;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('rejectForm').action = url;
+                document.getElementById('rejection_reason_input').value = result.value;
+                document.getElementById('rejectForm').submit();
+            }
+        });
+    }
+
+    function promptCancel(url) {
+        Swal.fire({
+            title: 'Batalkan Peminjaman?',
+            text: 'Booking yang sudah diterima akan dibatalkan. Masukkan alasan pembatalan.',
+            input: 'textarea',
+            inputLabel: 'Alasan Pembatalan (Wajib)',
+            inputPlaceholder: 'Tuliskan alasan pembatalan...',
+            inputAttributes: { required: 'true' },
+            showCancelButton: true,
+            confirmButtonText: 'Batalkan',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#ffc107',
+            preConfirm: (reason) => {
+                if (!reason) { Swal.showValidationMessage('Alasan pembatalan harus diisi!'); }
+                return reason;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('cancelForm').action = url;
+                document.getElementById('cancel_reason_input').value = result.value;
+                document.getElementById('cancelForm').submit();
+            }
+        });
+    }
+
+    function promptComplete(url) {
+        Swal.fire({
+            title: 'Selesaikan Peminjaman',
+            html: `
+                <div class="text-start">
+                    <p class="mb-3 text-muted">Pastikan labkom telah selesai digunakan.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Apakah labkom dalam keadaan bersih?</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="is_clean_swal" id="clean_yes" value="1" checked>
+                            <label class="form-check-label" for="clean_yes">Ya, Bersih</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="is_clean_swal" id="clean_no" value="0">
+                            <label class="form-check-label" for="clean_no">Tidak Bersih</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Catatan Laporan (Opsional)</label>
+                        <textarea id="report_note_swal" class="form-control" rows="3" placeholder="Tuliskan catatan terkait kondisi lab atau kelengkapan jika ada..."></textarea>
+                    </div>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Selesaikan',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#0dcaf0',
+            preConfirm: () => {
+                return {
+                    is_clean: document.getElementById('clean_yes').checked ? 1 : 0,
+                    report_note: document.getElementById('report_note_swal').value
+                };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.getElementById('completeForm');
+                form.action = url;
+                
+                let cleanInput = document.createElement('input');
+                cleanInput.type = 'hidden';
+                cleanInput.name = 'is_clean';
+                cleanInput.value = result.value.is_clean;
+                form.appendChild(cleanInput);
+
+                let noteInput = document.createElement('input');
+                noteInput.type = 'hidden';
+                noteInput.name = 'report_note';
+                noteInput.value = result.value.report_note;
+                form.appendChild(noteInput);
+
+                form.submit();
+            }
+        });
     }
 </script>
 @endpush

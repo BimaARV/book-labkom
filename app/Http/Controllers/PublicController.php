@@ -14,11 +14,7 @@ class PublicController extends Controller
         $laboratories = Laboratory::where('status', 'active')->with('labPcs')->get();
         $businessUnits = BusinessUnit::with('subUnits')->get();
         
-        $num1 = rand(1, 10);
-        $num2 = rand(1, 10);
-        session(['captcha_result' => $num1 + $num2]);
-
-        return view('welcome', compact('laboratories', 'businessUnits', 'num1', 'num2'));
+        return view('welcome', compact('laboratories', 'businessUnits'));
     }
 
     public function check(Request $request)
@@ -113,6 +109,15 @@ class PublicController extends Controller
                 'requested_start_time' => 'required|date_format:H:i',
                 'requested_end_time' => 'required|date_format:H:i|after:requested_start_time',
             ]);
+
+            $isSameDate = $booking->date === $request->requested_date;
+            $isSameStartTime = \Carbon\Carbon::parse($booking->start_time)->format('H:i') === \Carbon\Carbon::parse($request->requested_start_time)->format('H:i');
+            $isSameEndTime = \Carbon\Carbon::parse($booking->end_time)->format('H:i') === \Carbon\Carbon::parse($request->requested_end_time)->format('H:i');
+
+            if ($isSameDate && $isSameStartTime && $isSameEndTime) {
+                return back()->with('error', 'Tanggal dan waktu yang diajukan sama dengan jadwal saat ini.');
+            }
+
             $data['requested_date'] = $request->requested_date;
             $data['requested_start_time'] = $request->requested_start_time;
             $data['requested_end_time'] = $request->requested_end_time;
@@ -122,8 +127,16 @@ class PublicController extends Controller
                     'requested_laboratory_id' => 'required|exists:laboratories,id'
                 ]);
             }
-            $data['requested_laboratory_id'] = $request->requested_laboratory_id === 'all' ? null : $request->requested_laboratory_id;
-            $data['requested_is_all_labs'] = $request->requested_laboratory_id === 'all';
+
+            $requestedIsAllLabs = $request->requested_laboratory_id === 'all';
+            $requestedLabId = $requestedIsAllLabs ? null : $request->requested_laboratory_id;
+
+            if ($booking->is_all_labs == $requestedIsAllLabs && $booking->laboratory_id == $requestedLabId) {
+                return back()->with('error', 'Lab yang diajukan sama dengan lab saat ini.');
+            }
+
+            $data['requested_laboratory_id'] = $requestedLabId;
+            $data['requested_is_all_labs'] = $requestedIsAllLabs;
             $data['original_laboratory_id'] = $booking->laboratory_id;
             $data['original_is_all_labs'] = $booking->is_all_labs;
         }

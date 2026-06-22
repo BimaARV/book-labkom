@@ -47,17 +47,20 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        if (User::count() <= 1) {
-            return back()->with('error', 'Tidak dapat menghapus admin terakhir.');
+        if (User::count() <= 1 && $user->is_active) {
+            return back()->with('error', 'Tidak dapat menonaktifkan admin terakhir.');
         }
         
-        $deletedAdminName = $user->name;
-        $user->delete();
+        $user->is_active = !$user->is_active;
+        $user->save();
 
-        $notificationService = new \App\Services\NotificationService();
-        $notificationService->sendAdminDeletedNotification($deletedAdminName, auth()->user());
+        $action = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
-        return back()->with('success', 'Admin berhasil dihapus.');
+        // Uncomment or update notification if needed
+        // $notificationService = new \App\Services\NotificationService();
+        // $notificationService->sendAdminDeletedNotification($user->name, auth()->user());
+
+        return back()->with('success', "Admin berhasil {$action}.");
     }
 
     public function update(Request $request, User $user)

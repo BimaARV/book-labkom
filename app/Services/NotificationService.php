@@ -650,6 +650,33 @@ class NotificationService
         }
     }
 
+    public function sendBookingEndedAdminNotification(Booking $booking)
+    {
+        $settings = \App\Models\Setting::pluck('value', 'key');
+        $gatewayUrl = $this->getInternalGatewayUrl($settings['WA_GATEWAY_URL'] ?? null);
+        $groupId = $settings['WA_GROUP_ID'] ?? null;
+
+        if ($gatewayUrl && $groupId) {
+            $message = "⚠️ *PENGINGAT: WAKTU BOOKING BERAKHIR*\n\n";
+            $message .= "Peminjaman Labkom berikut telah mencapai batas waktu selesai:\n\n";
+            $message .= "Kode Booking: {$booking->tracking_code}\n";
+            $message .= "PIC: {$booking->pic_name}\n";
+            $message .= "Labkom: {$booking->lab_name}\n";
+            $message .= "Tanggal: " . \Carbon\Carbon::parse($booking->date)->format('d M Y') . "\n";
+            $message .= "Waktu: " . \Carbon\Carbon::parse($booking->start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($booking->end_time)->format('H:i') . "\n\n";
+            $message .= "Mohon tim Infrastructure untuk mengecek Labkom dan mengubah status booking menjadi *SELESAI*.";
+
+            try {
+                \Illuminate\Support\Facades\Http::post("{$gatewayUrl}/send", [
+                    'phone' => $groupId,
+                    'message' => $message,
+                ]);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to send Booking Ended WA Notification: " . $e->getMessage());
+            }
+        }
+    }
+
     public function sendAccountDeletedEmail(string $email, string $name)
     {
         $settings = \App\Models\Setting::pluck('value', 'key');

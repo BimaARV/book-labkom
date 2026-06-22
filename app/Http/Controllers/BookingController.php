@@ -25,17 +25,13 @@ class BookingController extends Controller
             'is_recurring' => 'nullable|boolean',
             'recurring_duration' => 'nullable|string',
             'recurring_end_date' => 'nullable|required_if:recurring_duration,custom|date|after_or_equal:date',
-            'captcha' => 'required|numeric',
+            'captcha' => 'required|captcha',
             'tos_agreed' => 'required|accepted',
         ], [
             'tos_agreed.required' => 'Anda harus menyetujui Ketentuan Penggunaan Labkom.',
-            'tos_agreed.accepted' => 'Anda harus menyetujui Ketentuan Penggunaan Labkom.'
+            'tos_agreed.accepted' => 'Anda harus menyetujui Ketentuan Penggunaan Labkom.',
+            'captcha.captcha' => 'Jawaban Captcha salah. Silakan coba lagi.'
         ]);
-
-        if ((int)$request->captcha !== session('captcha_result')) {
-            return back()->withErrors(['captcha' => 'Jawaban Captcha salah. Silakan coba lagi.'])->withInput();
-        }
-        session()->forget('captcha_result');
 
         $restrictedEmails = \App\Models\RestrictedEmail::pluck('email')->toArray();
         if (count($restrictedEmails) > 0) {
@@ -47,7 +43,7 @@ class BookingController extends Controller
                 }
             }
             if (!$isAllowed) {
-                return back()->with('error', 'Mohon Untuk Menggunakan Email Binawan.')->withInput();
+                return back()->withErrors(['email' => "Mohon maaf. Terjadi kesalahan<br><span style='font-size: small'>Error code: ERR-0010</span>"])->withInput();
             }
         }
 

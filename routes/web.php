@@ -57,6 +57,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('bookings', AdminBookingController::class);
         
         Route::resource('users', UserController::class);
+        Route::get('activity-logs', [App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
         
         Route::get('change-requests', [\App\Http\Controllers\Admin\ChangeRequestController::class, 'index'])->name('change-requests.index');
         Route::post('change-requests/{id}/process', [\App\Http\Controllers\Admin\ChangeRequestController::class, 'process'])->name('change-requests.process');

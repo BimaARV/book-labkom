@@ -14,6 +14,7 @@
                         <th>ID</th>
                         <th>Nama Admin</th>
                         <th>Email</th>
+                        <th>Status</th>
                         <th class="text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -27,12 +28,23 @@
                         </td>
                         <td>{{ $user->email }}</td>
                         <td>
+                            @if($user->is_active)
+                                <span class="badge bg-success">Aktif</span>
+                            @else
+                                <span class="badge bg-danger">Nonaktif</span>
+                            @endif
+                        </td>
+                        <td>
                             <div class="d-flex justify-content-center gap-2 align-items-center">
                                 <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ $user->id }}" title="Edit"><i class="bi bi-pencil"></i></button>
                                 @if(auth()->id() !== $user->id)
-                                <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="m-0 p-0 delete-form">
+                                <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="m-0 p-0">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus"><i class="bi bi-trash"></i></button>
+                                    @if($user->is_active)
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Nonaktifkan" onclick="return confirm('Yakin ingin menonaktifkan admin ini?')"><i class="bi bi-person-x"></i></button>
+                                    @else
+                                        <button type="submit" class="btn btn-sm btn-outline-success" title="Aktifkan" onclick="return confirm('Yakin ingin mengaktifkan admin ini?')"><i class="bi bi-person-check"></i></button>
+                                    @endif
                                 </form>
                                 @else
                                 <span class="badge bg-secondary">Current</span>
