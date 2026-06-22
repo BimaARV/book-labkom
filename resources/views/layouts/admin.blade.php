@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Admin Dashboard | Techub')</title>
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('Techub-Logo.png') }}" type="image/png">
+    <link rel="icon" href="{{ asset('Icon-Techub.png') }}" type="image/png">
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
