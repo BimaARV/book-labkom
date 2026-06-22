@@ -86,6 +86,13 @@
             <p><strong>Detail Peminjaman Terkini:</strong></p>
             <table class="details-table">
                 <tr>
+                    <th>Nama PIC</th>
+                    <td>
+                        <strong>{{ $booking->pic_name }}</strong><br>
+                        <small style="color: #64748b;">{{ $booking->whatsapp }} | {{ $booking->email }}</small>
+                    </td>
+                </tr>
+                <tr>
                     <th>Instansi</th>
                     <td>
                         {{ optional($booking->businessUnit)->name }}
