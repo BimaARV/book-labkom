@@ -404,9 +404,9 @@ class NotificationService
                 if (!empty($booking->report_note)) {
                     $messageGroup .= "Catatan Laporan: {$booking->report_note}\n";
                 }
+                $pdfUrl = secure_url('/track/' . $booking->tracking_code . '/pdf');
+                $messageGroup .= "\n*Informasi Detail Laporan Peminjam Lihat Di:*\n{$pdfUrl}\n";
             }
-            $pdfUrl = secure_url('/track/' . $booking->tracking_code . '/pdf');
-            $messageGroup .= "\n*Informasi Detail Laporan Peminjam Lihat Di:*\n{$pdfUrl}\n";
             $messageGroup .= "\nCek Detail: {$trackUrl}";
 
             try {
@@ -439,11 +439,8 @@ class NotificationService
                     if (!empty($booking->report_note)) {
                         $messagePic .= "Catatan Laporan: {$booking->report_note}\n";
                     }
-                }
-                $pdfUrl = secure_url('/track/' . $booking->tracking_code . '/pdf');
-                $messagePic .= "\n*Informasi Detail Laporan Anda Lihat Di:*\n{$pdfUrl}\n";
-                
-                if ($booking->status === 'completed') {
+                    $pdfUrl = secure_url('/track/' . $booking->tracking_code . '/pdf');
+                    $messagePic .= "\n*Informasi Detail Laporan Anda Lihat Di:*\n{$pdfUrl}\n\n";
                     $messagePic .= "Peminjaman Labkom Anda telah dinyatakan *SELESAI*.\nTerima kasih telah menggunakan fasilitas Labkom. Kami harap fasilitas yang kami sediakan dapat membantu kegiatan Anda dengan baik.\n\n";
                 }
 
