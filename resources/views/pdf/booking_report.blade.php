@@ -118,9 +118,9 @@
     </div>
     @endif
 
-    <div style="margin-top: 40px; border-top: 1px solid #ddd; padding-top: 10px; font-size: 11px; color: #666;">
+    <div style="margin-top: 40px; border-top: 1px solid #ddd; padding-top: 10px; font-size: 11px; color: #666; text-align: right;">
+        <p style="margin: 0 0 3px 0;">Dicetak pada: {{ \Carbon\Carbon::now()->format('d F Y H:i') }}</p>
         <p style="margin: 0;">Laporan di-generate secara otomatis oleh Sistem Techub</p>
-        <p style="margin: 3px 0 0 0;">Dicetak pada: {{ \Carbon\Carbon::now()->format('d F Y H:i') }}</p>
     </div>
 </body>
 </html>

@@ -201,7 +201,8 @@
         </div>
     </div>
 
-    <div class="section-title">Analisis Pengguna Teratas</div>
+    <div style="page-break-before: always;"></div>
+    <div class="section-title" style="margin-top: 0;">Analisis Penggunaan Teratas</div>
     <div style="margin-bottom: 40px;">
         <h4 style="color: #002B5C; margin-bottom: 5px;">Distribusi Penggunaan Berdasarkan Instansi/Fakultas</h4>
         <p style="color: #666; font-size: 11px; margin-top: 0; margin-bottom: 15px;">(Menggambarkan pangsa pengguna yang paling aktif memanfaatkan fasilitas labkom)</p>
