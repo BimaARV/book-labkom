@@ -60,10 +60,26 @@
             <th>Keperluan</th>
             <td>{{ $booking->purpose }}</td>
         </tr>
+        <tr>
+            <th>Status Peminjaman</th>
+            <td>
+                @if($booking->status == 'completed')
+                    Selesai
+                @elseif($booking->status == 'accepted')
+                    Disetujui
+                @elseif($booking->status == 'cancelled')
+                    Dibatalkan
+                @elseif($booking->status == 'rejected')
+                    Ditolak
+                @else
+                    Pending
+                @endif
+            </td>
+        </tr>
         @if($booking->status === 'completed')
         <tr>
-            <th>Keadaan Bersih</th>
-            <td>{{ $booking->is_clean ? 'Ya' : 'Tidak' }}</td>
+            <th>Keadaan Labkom</th>
+            <td>{{ $booking->is_clean ? 'Bersih' : 'Tidak Bersih' }}</td>
         </tr>
         @if(!empty($booking->report_note))
         <tr>
