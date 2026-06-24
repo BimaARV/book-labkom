@@ -107,7 +107,17 @@
                 </tr>
                 <tr>
                     <th>Tanggal</th>
-                    <td>{{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }}</td>
+                    <td>
+                        {{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }}
+                        @if($booking->group_id)
+                            @php
+                                $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)->max('date');
+                            @endphp
+                            @if($recurringEnd && $recurringEnd != $booking->date)
+                                <br><small style="color: #64748b;">&#8635; Rutin s/d {{ \Carbon\Carbon::parse($recurringEnd)->format('d M Y') }}</small>
+                            @endif
+                        @endif
+                    </td>
                 </tr>
                 <tr>
                     <th>Waktu</th>

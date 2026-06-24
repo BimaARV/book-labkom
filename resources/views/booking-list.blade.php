@@ -72,6 +72,16 @@
                                                 <div class="col-md-6">
                                                     <div class="text-muted-custom small mb-1">Tanggal Mulai</div>
                                                     <div class="fw-medium"><i class="bi bi-calendar-event text-primary me-2"></i>{{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }}</div>
+                                                    @if($booking->group_id)
+                                                        @php
+                                                            $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)->max('date');
+                                                        @endphp
+                                                        @if($recurringEnd && $recurringEnd != $booking->date)
+                                                            <div class="small text-muted mt-1" style="font-size: 0.75rem;">
+                                                                <i class="bi bi-arrow-repeat text-secondary"></i> Rutin s/d {{ \Carbon\Carbon::parse($recurringEnd)->format('d M Y') }}
+                                                            </div>
+                                                        @endif
+                                                    @endif
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="text-muted-custom small mb-1">Waktu</div>

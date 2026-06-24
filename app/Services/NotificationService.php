@@ -48,7 +48,13 @@ class NotificationService
         $message .= "Keperluan: {$booking->purpose}\n";
         
         if ($totalRecurringWeeks > 1) {
-            $message .= "Pemesanan Rutin: Ya (Total {$totalRecurringWeeks} Minggu berturut-turut)\n\n";
+            $lastBooking = \App\Models\Booking::where('group_id', $booking->group_id)->orderBy('date', 'desc')->first();
+            if ($lastBooking && $lastBooking->date != $booking->date) {
+                $endDateStr = \Carbon\Carbon::parse($lastBooking->date)->format('d M Y');
+                $message .= "Pemesanan Rutin: Ya ({$date} s/d {$endDateStr}, Total {$totalRecurringWeeks} Minggu)\n\n";
+            } else {
+                $message .= "Pemesanan Rutin: Ya (Total {$totalRecurringWeeks} Minggu berturut-turut)\n\n";
+            }
         } else {
             $message .= "\n";
         }

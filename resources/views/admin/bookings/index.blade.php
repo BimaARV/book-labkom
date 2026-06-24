@@ -114,6 +114,16 @@
                         <td>
                             <div class="fw-medium text-primary">{{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }}</div>
                             <div class="small">{{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}</div>
+                            @if($booking->group_id)
+                                @php
+                                    $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)->max('date');
+                                @endphp
+                                @if($recurringEnd && $recurringEnd != $booking->date)
+                                    <div class="small text-muted mt-1" style="font-size: 0.75rem;">
+                                        <i class="bi bi-arrow-repeat"></i> Rutin s/d {{ \Carbon\Carbon::parse($recurringEnd)->format('d M Y') }}
+                                    </div>
+                                @endif
+                            @endif
                         </td>
                         <td>
                             @if($booking->status == 'pending')
