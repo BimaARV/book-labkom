@@ -437,6 +437,7 @@ if (durationSelect) {
         }
     });
 }
+});
 </script>
 @endpush
 @endsection

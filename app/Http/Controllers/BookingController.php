@@ -68,7 +68,9 @@ class BookingController extends Controller
             ])->withInput();
         }
 
-        $currentDate = \Carbon\Carbon::parse($request->date)->addDay();
+        $currentDate = \Carbon\Carbon::parse($request->date);
+        $frequency === 'daily' ? $currentDate->addDay() : $currentDate->addWeek();
+        
         while ($currentDate->lte($endDate)) {
             $datesToBook[] = $currentDate->format('Y-m-d');
             $frequency === 'daily' ? $currentDate->addDay() : $currentDate->addWeek();

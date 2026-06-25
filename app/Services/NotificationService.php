@@ -113,9 +113,19 @@ class NotificationService
         }
 
         $labLabel = $changeRequest->type === 'relocation' ? 'Lab Awal' : 'Labkom saat ini';
+        
+        $date = \Carbon\Carbon::parse($booking->date)->format('d M Y');
+        $recurringInfo = '';
+        if ($booking->group_id) {
+            $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)->max('date');
+            if ($recurringEnd && $recurringEnd != $booking->date) {
+                $recurringInfo = " (Rutin s/d " . \Carbon\Carbon::parse($recurringEnd)->format('d M Y') . ")";
+            }
+        }
 
         $message = "⚠️ *PENGAJUAN PERUBAHAN BOOKING*\n\n";
         $message .= "Kode Booking: {$booking->tracking_code}\n";
+        $message .= "Tanggal Booking: {$date}{$recurringInfo}\n";
         $message .= "Pemohon:\n";
         $message .= "- Nama: *{$booking->pic_name}*\n";
         $message .= "- Email: {$booking->email}\n";
@@ -183,9 +193,19 @@ class NotificationService
             ? "Permintaan Pembatalan booking Anda telah {$statusText}.\n\n"
             : "Pengajuan perubahan booking Anda telah {$statusText}.\n\n";
 
+        $date = \Carbon\Carbon::parse($booking->date)->format('d M Y');
+        $recurringInfo = '';
+        if ($booking->group_id) {
+            $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)->max('date');
+            if ($recurringEnd && $recurringEnd != $booking->date) {
+                $recurringInfo = " (Rutin s/d " . \Carbon\Carbon::parse($recurringEnd)->format('d M Y') . ")";
+            }
+        }
+
         // WA Message for Group
         $messageGroup = "⚠️ *HASIL PENGAJUAN PERUBAHAN BOOKING*\n\n";
         $messageGroup .= "Kode Booking: {$booking->tracking_code}\n";
+        $messageGroup .= "Tanggal Booking: {$date}{$recurringInfo}\n";
         $messageGroup .= $actionTextGroup;
         $messageGroup .= "Pemohon:\n";
         $messageGroup .= "- Nama: *{$booking->pic_name}*\n";
@@ -200,6 +220,7 @@ class NotificationService
         $messageUser = "Halo *{$booking->pic_name}*,\n\n";
         $messageUser .= $actionTextUser;
         $messageUser .= "Kode Booking: {$booking->tracking_code}\n";
+        $messageUser .= "Tanggal Booking: {$date}{$recurringInfo}\n";
         $messageUser .= "Pemohon:\n";
         $messageUser .= "- Nama: *{$booking->pic_name}*\n";
         $messageUser .= "- Email: {$booking->email}\n";
@@ -269,6 +290,13 @@ class NotificationService
         $instansi = $subUnitName ? "{$unitName} ({$subUnitName})" : $unitName;
 
         $date = \Carbon\Carbon::parse($booking->date)->format('d M Y');
+        $recurringInfo = '';
+        if ($booking->group_id) {
+            $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)->max('date');
+            if ($recurringEnd && $recurringEnd != $booking->date) {
+                $recurringInfo = " (Rutin s/d " . \Carbon\Carbon::parse($recurringEnd)->format('d M Y') . ")";
+            }
+        }
         $time = \Carbon\Carbon::parse($booking->start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($booking->end_time)->format('H:i');
         $statusMap = [
             'accepted' => '*DISETUJUI*',
@@ -283,7 +311,7 @@ class NotificationService
         $dataTerkini = "*Detail Peminjaman:*\n";
         $dataTerkini .= "Instansi: {$instansi}\n";
         $dataTerkini .= "Labkom: {$labName}\n";
-        $dataTerkini .= "Tanggal: {$date}\n";
+        $dataTerkini .= "Tanggal: {$date}{$recurringInfo}\n";
         $dataTerkini .= "Waktu: {$time}\n";
         $dataTerkini .= "Keperluan: {$booking->purpose}\n";
 
@@ -389,6 +417,13 @@ class NotificationService
         $subUnitName = optional($booking->subBusinessUnit)->name;
         $instansi = $subUnitName ? "{$unitName} ({$subUnitName})" : $unitName;
         $date = \Carbon\Carbon::parse($booking->date)->format('d M Y');
+        $recurringInfo = '';
+        if ($booking->group_id) {
+            $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)->max('date');
+            if ($recurringEnd && $recurringEnd != $booking->date) {
+                $recurringInfo = " (Rutin s/d " . \Carbon\Carbon::parse($recurringEnd)->format('d M Y') . ")";
+            }
+        }
         $time = \Carbon\Carbon::parse($booking->start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($booking->end_time)->format('H:i');
         $trackUrl = secure_url('/track/' . $booking->tracking_code);
 
@@ -402,7 +437,7 @@ class NotificationService
             $messageGroup .= "Kode Booking: {$booking->tracking_code}\n";
             $messageGroup .= "Instansi: {$instansi}\n";
             $messageGroup .= "Labkom: {$labName}\n";
-            $messageGroup .= "Tanggal: {$date}\n";
+            $messageGroup .= "Tanggal: {$date}{$recurringInfo}\n";
             $messageGroup .= "Waktu: {$time}\n";
             $messageGroup .= "Keperluan: {$booking->purpose}\n";
             
@@ -437,7 +472,7 @@ class NotificationService
                 $messagePic .= "Kode Booking: {$booking->tracking_code}\n";
                 $messagePic .= "Instansi: {$instansi}\n";
                 $messagePic .= "Labkom: {$labName}\n";
-                $messagePic .= "Tanggal: {$date}\n";
+                $messagePic .= "Tanggal: {$date}{$recurringInfo}\n";
                 $messagePic .= "Waktu: {$time}\n";
                 $messagePic .= "Keperluan: {$booking->purpose}\n\n";
                 

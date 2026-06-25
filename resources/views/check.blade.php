@@ -62,6 +62,16 @@
                                     <div class="p-2 bg-light text-dark rounded mb-2 border-start border-4 border-danger">
                                         <div class="fw-bold">{{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} - {{ $endWithBuffer->format('H:i') }}</div>
                                         <div class="small mt-1">{{ $booking->businessUnit->name }}{{ $booking->subBusinessUnit ? ' / ' . $booking->subBusinessUnit->name : '' }} - {{ $booking->pic_name }}</div>
+                                        @if($booking->group_id)
+                                            @php
+                                                $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)->max('date');
+                                            @endphp
+                                            @if($recurringEnd && $recurringEnd != $booking->date)
+                                                <div class="small text-muted mt-1" style="font-size: 0.7rem;">
+                                                    <i class="bi bi-arrow-repeat text-secondary"></i> Rutin s/d {{ \Carbon\Carbon::parse($recurringEnd)->format('d M Y') }}
+                                                </div>
+                                            @endif
+                                        @endif
                                     </div>
                                 @empty
                                     <div class="text-muted small">Belum ada booking pada tanggal ini.</div>
