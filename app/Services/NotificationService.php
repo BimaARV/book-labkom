@@ -117,7 +117,9 @@ class NotificationService
         $date = \Carbon\Carbon::parse($booking->date)->format('d M Y');
         $recurringInfo = '';
         if ($booking->group_id) {
-            $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)->max('date');
+            $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)
+                ->whereNotIn('status', ['cancelled', 'rejected'])
+                ->max('date');
             if ($recurringEnd && $recurringEnd != $booking->date) {
                 $recurringInfo = " (Rutin s/d " . \Carbon\Carbon::parse($recurringEnd)->format('d M Y') . ")";
             }
@@ -196,7 +198,9 @@ class NotificationService
         $date = \Carbon\Carbon::parse($booking->date)->format('d M Y');
         $recurringInfo = '';
         if ($booking->group_id) {
-            $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)->max('date');
+            $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)
+                ->whereNotIn('status', ['cancelled', 'rejected'])
+                ->max('date');
             if ($recurringEnd && $recurringEnd != $booking->date) {
                 $recurringInfo = " (Rutin s/d " . \Carbon\Carbon::parse($recurringEnd)->format('d M Y') . ")";
             }
@@ -292,7 +296,9 @@ class NotificationService
         $date = \Carbon\Carbon::parse($booking->date)->format('d M Y');
         $recurringInfo = '';
         if ($booking->group_id) {
-            $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)->max('date');
+            $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)
+                ->whereNotIn('status', ['cancelled', 'rejected'])
+                ->max('date');
             if ($recurringEnd && $recurringEnd != $booking->date) {
                 $recurringInfo = " (Rutin s/d " . \Carbon\Carbon::parse($recurringEnd)->format('d M Y') . ")";
             }
@@ -419,7 +425,9 @@ class NotificationService
         $date = \Carbon\Carbon::parse($booking->date)->format('d M Y');
         $recurringInfo = '';
         if ($booking->group_id) {
-            $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)->max('date');
+            $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)
+                ->whereNotIn('status', ['cancelled', 'rejected'])
+                ->max('date');
             if ($recurringEnd && $recurringEnd != $booking->date) {
                 $recurringInfo = " (Rutin s/d " . \Carbon\Carbon::parse($recurringEnd)->format('d M Y') . ")";
             }

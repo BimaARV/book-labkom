@@ -71,7 +71,9 @@
                                         <div class="small mt-1">{{ $booking->businessUnit->name }}{{ $booking->subBusinessUnit ? ' / ' . $booking->subBusinessUnit->name : '' }} - {{ $booking->pic_name }}</div>
                                         @if($booking->group_id)
                                             @php
-                                                $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)->max('date');
+                                                $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)
+                                                    ->whereNotIn('status', ['cancelled', 'rejected'])
+                                                    ->max('date');
                                             @endphp
                                             @if($recurringEnd && $recurringEnd != $booking->date)
                                                 <div class="small text-muted mt-1" style="font-size: 0.7rem;">

@@ -116,7 +116,9 @@
                             <div class="small">{{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}</div>
                             @if($booking->group_id)
                                 @php
-                                    $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)->max('date');
+                                    $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)
+                                        ->whereNotIn('status', ['cancelled', 'rejected'])
+                                        ->max('date');
                                 @endphp
                                 @if($recurringEnd && $recurringEnd != $booking->date)
                                     <div class="small text-muted mt-1" style="font-size: 0.75rem;">
