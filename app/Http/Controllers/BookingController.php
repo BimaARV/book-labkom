@@ -151,7 +151,11 @@ class BookingController extends Controller
                 $notificationService->sendNewBookingNotification($booking, $totalWeeks);
             }
         }
+        $notificationService = new NotificationService();
+                $totalWeeks = count($datesToBook);
+                $notificationService->sendNewBookingNotification($firstBooking, $totalWeeks);
 
+        return redirect()->route('booking.track', ['code' => $firstBooking->tracking_code]);
         return redirect()->route('booking.track', ['code' => $firstBooking->tracking_code]);
     }
 }
