@@ -95,7 +95,7 @@ class BookingController extends Controller
         foreach ($datesToBook as $bookDate) {
             $conflict = Booking::with(['businessUnit', 'subBusinessUnit'])
                 ->where('date', $bookDate)
-                ->whereIn('status', ['accepted', 'completed', 'pending'])
+                ->whereIn('status', ['accepted', 'pending'])
                 ->where(function ($query) use ($request, $newEndWithBuffer, $isAllLabs) {
                     $query->whereRaw('CAST(? AS TIME) < ADDTIME(end_time, "01:00:00")', [$request->start_time])
                           ->whereTime('start_time', '<', $newEndWithBuffer);
