@@ -23,6 +23,7 @@ class BookingController extends Controller
             'email' => 'required|email',
             'purpose' => 'required|string',
             'is_recurring' => 'nullable|boolean',
+            'recurring_frequency' => 'nullable|in:daily,weekly',
             'recurring_duration' => 'nullable|string',
             'recurring_end_date' => 'nullable|required_if:recurring_duration,custom|date|after_or_equal:date',
             'captcha' => 'required|captcha',
@@ -55,33 +56,35 @@ class BookingController extends Controller
         $datesToBook = [$request->date];
 
         if ($request->is_recurring) {
-            $currentDate = \Carbon\Carbon::parse($request->date)->addWeek();
+    $frequency = $request->recurring_frequency ?? 'weekly';
 
-            if ($request->recurring_duration === 'custom' && $request->recurring_end_date) {
-                $endDate = \Carbon\Carbon::parse($request->recurring_end_date);
+    if ($request->recurring_duration === 'custom' && $request->recurring_end_date) {
+        $endDate = \Carbon\Carbon::parse($request->recurring_end_date);
+        $maxEndDate = \Carbon\Carbon::parse($request->date)->addYear();
 
-                // Batasi maksimal 1 tahun
-                $maxEndDate = \Carbon\Carbon::parse($request->date)->addYear();
-                if ($endDate->gt($maxEndDate)) {
-                    return back()->withErrors([
-                        'recurring_end_date' => 'Maksimal booking berulang adalah 1 tahun dari tanggal awal.'
-                    ])->withInput();
-                }
+        if ($endDate->gt($maxEndDate)) {
+            return back()->withErrors([
+                'recurring_end_date' => 'Maksimal booking berulang adalah 1 tahun dari tanggal awal.'
+            ])->withInput();
+        }
 
-                while ($currentDate->lte($endDate)) {
-                    $datesToBook[] = $currentDate->format('Y-m-d');
-                    $currentDate->addWeek();
-                }
-            } elseif (is_numeric($request->recurring_duration)) {
-                $weeks = (int) $request->recurring_duration;
-                if ($weeks > 1) {
-                    for ($i = 1; $i < $weeks; $i++) {
-                        $datesToBook[] = $currentDate->format('Y-m-d');
-                        $currentDate->addWeek();
-                    }
-                }
+        $currentDate = \Carbon\Carbon::parse($request->date)->addDay();
+        while ($currentDate->lte($endDate)) {
+            $datesToBook[] = $currentDate->format('Y-m-d');
+            $frequency === 'daily' ? $currentDate->addDay() : $currentDate->addWeek();
+        }
+
+    } elseif (is_numeric($request->recurring_duration)) {
+        $weeks = (int) $request->recurring_duration;
+        $currentDate = \Carbon\Carbon::parse($request->date)->addWeek();
+        if ($weeks > 1) {
+            for ($i = 1; $i < $weeks; $i++) {
+                $datesToBook[] = $currentDate->format('Y-m-d');
+                $currentDate->addWeek();
             }
         }
+    }
+}
 
         $newEndWithBuffer = date('H:i', strtotime($request->end_time . ' +1 hour'));
 

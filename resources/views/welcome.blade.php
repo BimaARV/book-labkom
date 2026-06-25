@@ -134,22 +134,32 @@
                         <div class="col-md-12">
                             <div class="form-check form-switch mt-2">
                                 <input class="form-check-input" type="checkbox" role="switch" id="is_recurring" name="is_recurring" value="1" {{ old('is_recurring') ? 'checked' : '' }}>
-                                <label class="form-check-label fw-medium" for="is_recurring">Jadikan Pemesanan Rutin (Setiap Minggu)</label>
+                                <label class="form-check-label fw-medium" for="is_recurring">Jadikan Pemesanan Rutin</label>
                             </div>
                         </div>
                         
                         <!-- Recurring Options -->
                         <div class="col-md-12" id="recurring_options_container" style="display: {{ old('is_recurring') ? 'block' : 'none' }};">
-                            <div class="card bg-light border-0">
+                            <div class="card bg-body-secondary border-0">
                                 <div class="card-body">
+
+                                    {{-- Frekuensi --}}
+                                    <label for="recurring_frequency" class="form-label fw-medium">Frekuensi Rutin <span class="text-danger">*</span></label>
+                                    <select class="form-select mb-3" name="recurring_frequency" id="recurring_frequency">
+                                        <option value="weekly" {{ old('recurring_frequency', 'weekly') == 'weekly' ? 'selected' : '' }}>Setiap Minggu</option>
+                                        <option value="daily" {{ old('recurring_frequency') == 'daily' ? 'selected' : '' }}>Setiap Hari</option>
+                                    </select>
+
+                                    {{-- Durasi --}}
                                     <label for="recurring_duration" class="form-label fw-medium">Durasi Rutin <span class="text-danger">*</span></label>
                                     <select class="form-select mb-3" name="recurring_duration" id="recurring_duration">
-                                        <option value="4" {{ old('recurring_duration') == '4' ? 'selected' : '' }}>1 Bulan (Selama 4 Minggu ke depan)</option>
-                                        <option value="8" {{ old('recurring_duration') == '8' ? 'selected' : '' }}>Setengah Semester (Selama 8 Minggu ke depan)</option>
-                                        <option value="16" {{ old('recurring_duration', '16') == '16' ? 'selected' : '' }}>1 Semester (Selama 16 Minggu ke depan)</option>
+                                        <option value="4" {{ old('recurring_duration') == '4' ? 'selected' : '' }} class="weekly-only">1 Bulan (4 Minggu)</option>
+                                        <option value="8" {{ old('recurring_duration') == '8' ? 'selected' : '' }} class="weekly-only">Setengah Semester (8 Minggu)</option>
+                                        <option value="16" {{ old('recurring_duration', '16') == '16' ? 'selected' : '' }} class="weekly-only">1 Semester (16 Minggu)</option>
                                         <option value="custom" {{ old('recurring_duration') == 'custom' ? 'selected' : '' }}>Pilih Tanggal Berakhir Manual</option>
                                     </select>
 
+                                    {{-- Tanggal berakhir (custom) --}}
                                     <div id="custom_end_date_wrapper" style="display: {{ old('recurring_duration') == 'custom' ? 'block' : 'none' }};">
                                         <label for="recurring_end_date" class="form-label fw-medium">Tanggal Berakhir Rutin <span class="text-danger">*</span></label>
                                         <div class="input-group mb-2">
@@ -157,7 +167,11 @@
                                             <input type="date" name="recurring_end_date" class="form-control" id="recurring_end_date" value="{{ old('recurring_end_date') }}" min="{{ date('Y-m-d') }}">
                                         </div>
                                     </div>
-                                    <small class="text-muted"><i class="bi bi-info-circle"></i> Sistem otomatis mem-booking setiap minggu di hari dan jam yang sama sesuai durasi yang dipilih.</small>
+
+                                    <small class="text-muted" id="recurring_hint">
+                                        <i class="bi bi-info-circle"></i>
+                                        <span id="recurring_hint_text">Sistem otomatis mem-booking setiap minggu di hari dan jam yang sama sesuai durasi yang dipilih.</span>
+                                    </small>
                                 </div>
                             </div>
                         </div>
@@ -362,32 +376,67 @@
             }
 
             if (isRecurringCheckbox) {
-            isRecurringCheckbox.addEventListener('change', function() {
-                if(this.checked) {
-                    recurringContainer.style.display = 'block';
-                    if (durationSelect.value === 'custom') {
-                        recurringInput.required = true;
-                    }
-                } else {
-                    recurringContainer.style.display = 'none';
-                    recurringInput.required = false;
-                }
-            });
-        }
-
-        if (durationSelect) {
-            durationSelect.addEventListener('change', function() {
-                if (this.value === 'custom') {
-                    customDateWrapper.style.display = 'block';
-                    recurringInput.required = true;
-                } else {
-                    customDateWrapper.style.display = 'none';
-                    recurringInput.required = false;
-                    recurringInput.value = '';
-                }
-            });
+    isRecurringCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            recurringContainer.style.display = 'block';
+            if (durationSelect.value === 'custom') {
+                recurringInput.required = true;
+            }
+        } else {
+            recurringContainer.style.display = 'none';
+            recurringInput.required = false;
         }
     });
+}
+
+const frequencySelect = document.getElementById('recurring_frequency');
+const recurringHintText = document.getElementById('recurring_hint_text');
+
+function updateRecurringOptions() {
+    const freq = frequencySelect ? frequencySelect.value : 'weekly';
+    const weeklyOptions = ['4', '8', '16'];
+
+    if (freq === 'daily') {
+        // Kalau harian, semua opsi durasi minggu tidak relevan — force ke custom
+        Array.from(durationSelect.options).forEach(opt => {
+            if (weeklyOptions.includes(opt.value)) {
+                opt.style.display = 'none';
+            }
+        });
+        durationSelect.value = 'custom';
+        document.getElementById('custom_end_date_wrapper').style.display = 'block';
+        recurringInput.required = true;
+        recurringHintText.textContent = 'Sistem otomatis mem-booking setiap hari di jam yang sama sesuai tanggal berakhir yang dipilih.';
+    } else {
+        // Mingguan — tampilkan semua opsi
+        Array.from(durationSelect.options).forEach(opt => {
+            opt.style.display = '';
+        });
+        if (durationSelect.value === 'custom') {
+            document.getElementById('custom_end_date_wrapper').style.display = 'block';
+            recurringInput.required = true;
+        }
+        recurringHintText.textContent = 'Sistem otomatis mem-booking setiap minggu di hari dan jam yang sama sesuai durasi yang dipilih.';
+    }
+}
+
+if (frequencySelect) {
+    frequencySelect.addEventListener('change', updateRecurringOptions);
+    updateRecurringOptions(); // trigger saat load
+}
+
+if (durationSelect) {
+    durationSelect.addEventListener('change', function() {
+        if (this.value === 'custom') {
+            document.getElementById('custom_end_date_wrapper').style.display = 'block';
+            recurringInput.required = true;
+        } else {
+            document.getElementById('custom_end_date_wrapper').style.display = 'none';
+            recurringInput.required = false;
+            recurringInput.value = '';
+        }
+    });
+}
 </script>
 @endpush
 @endsection
