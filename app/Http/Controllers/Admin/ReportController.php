@@ -58,12 +58,17 @@ class ReportController extends Controller
         // Most active Business Unit & Labkom
         $parents = [];
         $children = [];
-        $labkoms = [];
+        $allActiveLabs = \App\Models\Laboratory::where('status', 'active')->pluck('name')->toArray();
+        $labkoms = array_fill_keys($allActiveLabs, 0);
 
         foreach ($bookings as $booking) {
             if (!in_array($booking->status, ['rejected', 'cancelled'])) {
-                if ($booking->laboratory || $booking->is_all_labs) {
-                    $labName = $booking->is_all_labs ? 'Semua Labkom' : $booking->laboratory->name;
+                if ($booking->is_all_labs) {
+                    foreach ($allActiveLabs as $labName) {
+                        $labkoms[$labName]++;
+                    }
+                } elseif ($booking->laboratory) {
+                    $labName = $booking->laboratory->name;
                     if (!isset($labkoms[$labName])) $labkoms[$labName] = 0;
                     $labkoms[$labName]++;
                 }
@@ -81,6 +86,10 @@ class ReportController extends Controller
                     $children[$parentName][$childName]++;
                 }
             }
+        }
+
+        foreach ($labkoms as $name => $count) {
+            if ($count === 0) unset($labkoms[$name]);
         }
 
         arsort($parents);

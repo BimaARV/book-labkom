@@ -25,7 +25,7 @@ class PublicController extends Controller
         
         $allLabsBookings = Booking::where('is_all_labs', true)
             ->whereDate('date', $date)
-            ->where('status', 'accepted')
+            ->whereIn('status', ['accepted', 'completed', 'pending'])
             ->get();
 
         $laboratories = Laboratory::where('status', 'active')->with([

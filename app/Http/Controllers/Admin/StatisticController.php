@@ -70,11 +70,32 @@ class StatisticController extends Controller
                 ->groupBy('laboratory_id', 'is_all_labs')
                 ->get();
                 
-            $labArray = [];
+            $allActiveLabs = \App\Models\Laboratory::where('status', 'active')->pluck('name')->toArray();
+            $labCounts = array_fill_keys($allActiveLabs, 0);
+
             foreach ($lStats as $stat) {
-                $name = $stat->is_all_labs ? 'Semua Labkom' : (optional($stat->laboratory)->name ?? 'Unknown');
-                $labArray[] = ['name' => $name, 'total' => $stat->total];
+                if ($stat->is_all_labs) {
+                    foreach ($allActiveLabs as $labName) {
+                        $labCounts[$labName] += $stat->total;
+                    }
+                } else {
+                    $name = optional($stat->laboratory)->name;
+                    if ($name) {
+                        if (!isset($labCounts[$name])) {
+                            $labCounts[$name] = 0;
+                        }
+                        $labCounts[$name] += $stat->total;
+                    }
+                }
             }
+            
+            $labArray = [];
+            foreach ($labCounts as $name => $total) {
+                if ($total > 0) {
+                    $labArray[] = ['name' => $name, 'total' => $total];
+                }
+            }
+            
             usort($labArray, function($a, $b) { return $b['total'] <=> $a['total']; });
             
             $labChartData['labels'] = array_column($labArray, 'name');
