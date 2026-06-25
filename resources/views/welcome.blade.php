@@ -146,8 +146,8 @@
                                     {{-- Frekuensi --}}
                                     <label for="recurring_frequency" class="form-label fw-medium">Frekuensi Rutin <span class="text-danger">*</span></label>
                                     <select class="form-select mb-3" name="recurring_frequency" id="recurring_frequency">
-                                        <option value="weekly" {{ old('recurring_frequency', 'weekly') == 'weekly' ? 'selected' : '' }}>Setiap Minggu</option>
-                                        <option value="daily" {{ old('recurring_frequency') == 'daily' ? 'selected' : '' }}>Setiap Hari</option>
+                                        <option value="weekly" {{ old('recurring_frequency', 'weekly') == 'weekly' ? 'selected' : '' }}>Mingguan</option>
+                                        <option value="daily" {{ old('recurring_frequency') == 'daily' ? 'selected' : '' }}>Harian</option>
                                     </select>
 
                                     {{-- Durasi --}}

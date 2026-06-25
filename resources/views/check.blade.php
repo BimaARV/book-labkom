@@ -60,7 +60,14 @@
                                         $endWithBuffer = \Carbon\Carbon::parse($booking->end_time)->addHour();
                                     @endphp
                                     <div class="p-2 bg-light text-dark rounded mb-2 border-start border-4 border-danger">
-                                        <div class="fw-bold">{{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} - {{ $endWithBuffer->format('H:i') }}</div>
+                                        <div class="fw-bold">
+                                            {{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} - {{ $endWithBuffer->format('H:i') }}
+                                            @if($booking->status === 'pending')
+                                                <span class="badge bg-warning text-dark ms-2">Menunggu Persetujuan</span>
+                                            @elseif($booking->status === 'completed')
+                                                <span class="badge bg-info ms-2">Selesai</span>
+                                            @endif
+                                        </div>
                                         <div class="small mt-1">{{ $booking->businessUnit->name }}{{ $booking->subBusinessUnit ? ' / ' . $booking->subBusinessUnit->name : '' }} - {{ $booking->pic_name }}</div>
                                         @if($booking->group_id)
                                             @php
