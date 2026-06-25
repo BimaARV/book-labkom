@@ -58,10 +58,12 @@
                 {{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }} ({{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }})
                 @if($booking->group_id)
                     @php
-                        $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)->max('date');
+                        $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)
+                            ->whereNotIn('status', ['cancelled', 'rejected'])
+                            ->max('date');
                     @endphp
                     @if($recurringEnd && $recurringEnd != $booking->date)
-                        <br><small style="color: #666; font-size: 12px;">&#8635; Rutin s/d {{ \Carbon\Carbon::parse($recurringEnd)->format('d M Y') }}</small>
+                        <br><small style="color: #666; font-size: 12px;">Rutin s/d {{ \Carbon\Carbon::parse($recurringEnd)->format('d M Y') }}</small>
                     @endif
                 @endif
             </td>
