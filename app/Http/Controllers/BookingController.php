@@ -53,12 +53,21 @@ class BookingController extends Controller
         }
 
         $datesToBook = [$request->date];
-        
+
         if ($request->is_recurring) {
             $currentDate = \Carbon\Carbon::parse($request->date)->addWeek();
-            
+
             if ($request->recurring_duration === 'custom' && $request->recurring_end_date) {
                 $endDate = \Carbon\Carbon::parse($request->recurring_end_date);
+
+                // Batasi maksimal 1 tahun
+                $maxEndDate = \Carbon\Carbon::parse($request->date)->addYear();
+                if ($endDate->gt($maxEndDate)) {
+                    return back()->withErrors([
+                        'recurring_end_date' => 'Maksimal booking berulang adalah 1 tahun dari tanggal awal.'
+                    ])->withInput();
+                }
+
                 while ($currentDate->lte($endDate)) {
                     $datesToBook[] = $currentDate->format('Y-m-d');
                     $currentDate->addWeek();
@@ -66,7 +75,6 @@ class BookingController extends Controller
             } elseif (is_numeric($request->recurring_duration)) {
                 $weeks = (int) $request->recurring_duration;
                 if ($weeks > 1) {
-                    // Loop starting from 1 since index 0 is already the first date
                     for ($i = 1; $i < $weeks; $i++) {
                         $datesToBook[] = $currentDate->format('Y-m-d');
                         $currentDate->addWeek();
@@ -76,9 +84,8 @@ class BookingController extends Controller
         }
 
         $newEndWithBuffer = date('H:i', strtotime($request->end_time . ' +1 hour'));
-        
+
         $firstConflict = null;
-        // Cek ketersediaan (bentrok) untuk semua tanggal yang akan di-book dengan aturan Jeda 1 Jam
         $conflictingDates = [];
         foreach ($datesToBook as $bookDate) {
             $conflict = Booking::with(['businessUnit', 'subBusinessUnit'])
@@ -87,7 +94,7 @@ class BookingController extends Controller
                 ->where(function ($query) use ($request, $newEndWithBuffer, $isAllLabs) {
                     $query->whereRaw('CAST(? AS TIME) < ADDTIME(end_time, "01:00:00")', [$request->start_time])
                           ->whereTime('start_time', '<', $newEndWithBuffer);
-                    
+
                     if (!$isAllLabs) {
                         $query->where(function($q) use ($request) {
                             $q->where('laboratory_id', $request->laboratory_id)
@@ -106,7 +113,7 @@ class BookingController extends Controller
             $unitName = optional($firstConflict->businessUnit)->name;
             $subUnitName = optional($firstConflict->subBusinessUnit)->name;
             $instansi = $subUnitName ? "{$unitName}/{$subUnitName}" : $unitName;
-            
+
             $errorMsg = "Labkom sudah terpakai pada waktu yang sama oleh {$instansi}";
             return back()->withErrors(['error' => $errorMsg])->withInput();
         }
@@ -143,19 +150,13 @@ class BookingController extends Controller
             if ($index === 0) {
                 $firstBooking = $booking;
             }
-
-            // Trigger notification queue (we only send one consolidated notification for the first booking to avoid spamming for every week)
-            if ($index === 0) {
-                $notificationService = new NotificationService();
-                $totalWeeks = count($datesToBook);
-                $notificationService->sendNewBookingNotification($booking, $totalWeeks);
-            }
         }
-        $notificationService = new NotificationService();
-                $totalWeeks = count($datesToBook);
-                $notificationService->sendNewBookingNotification($firstBooking, $totalWeeks);
 
-        return redirect()->route('booking.track', ['code' => $firstBooking->tracking_code]);
+        // Kirim notifikasi setelah semua booking tersimpan di DB
+        $notificationService = new NotificationService();
+        $totalWeeks = count($datesToBook);
+        $notificationService->sendNewBookingNotification($firstBooking, $totalWeeks);
+
         return redirect()->route('booking.track', ['code' => $firstBooking->tracking_code]);
     }
 }
