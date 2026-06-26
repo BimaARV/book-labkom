@@ -15,8 +15,13 @@
                             </div>
                             <h2 class="fw-bold mb-3">Booking Sedang Diproses</h2>
                             <p class="text-muted-custom mb-4 px-md-4">
-                                Permintaan peminjaman Labkom Anda (<strong>{{ $booking->lab_name }}</strong>) sedang menunggu persetujuan dari tim IT Infrastructure/Admin.
+                                Permintaan peminjaman Labkom Anda (<strong>{{ $booking->lab_name }}</strong>) sedang menunggu persetujuan dari tim IT Infrastructure.
                             </p>
+                            <div class="alert alert-warning d-inline-block px-4 py-2 mb-4">
+                                <i class="bi bi-ticket-perforated me-2"></i>
+                                Kode Booking Anda: <strong class="ms-1">{{ $booking->tracking_code }}</strong>
+                            </div>
+                            <p class="text-muted small">Simpan kode ini untuk memantau status atau mengajukan perubahan booking.</p>
                         @elseif($booking->status == 'accepted')
                             <div class="mb-4 text-success">
                                 <i class="bi bi-check-circle-fill" style="font-size: 5rem;"></i>
@@ -25,6 +30,11 @@
                             <p class="text-muted-custom fs-5 mb-4">
                                 Permintaan peminjaman Labkom Anda (<strong>{{ $booking->lab_name }}</strong>) telah disetujui. Silakan gunakan lab sesuai jadwal yang Anda pilih.
                             </p>
+                            <div class="alert alert-warning d-inline-block px-4 py-2 mb-4">
+                                <i class="bi bi-ticket-perforated me-2"></i>
+                                Kode Booking Anda: <strong class="ms-1">{{ $booking->tracking_code }}</strong>
+                            </div>
+                            <p class="text-muted small">Simpan kode ini untuk memantau status atau mengajukan perubahan booking.</p>
                             @if($booking->handled_by)
                                 <div class="badge bg-success bg-opacity-10 text-success border border-success p-2 mb-4">
                                     <i class="bi bi-person-check-fill me-1"></i> Diproses oleh: {{ $booking->handled_by }}
@@ -38,6 +48,11 @@
                             <p class="text-muted-custom fs-5 mb-4">
                                 Peminjaman Labkom Anda (<strong>{{ $booking->lab_name }}</strong>) telah selesai. Terima kasih telah menggunakan fasilitas Labkom. Kami harap fasilitas yang kami sediakan dapat membantu kegiatan Anda dengan baik.
                             </p>
+                            <div class="alert alert-warning d-inline-block px-4 py-2 mb-4">
+                                <i class="bi bi-ticket-perforated me-2"></i>
+                                Kode Booking Anda: <strong class="ms-1">{{ $booking->tracking_code }}</strong>
+                            </div>
+                            <p class="text-muted small">Simpan kode ini untuk memantau status atau mengajukan perubahan booking.</p>
                             @if($booking->handled_by)
                                 <div class="badge bg-info bg-opacity-10 text-info border border-info p-2 mb-4">
                                     <i class="bi bi-person-check-fill me-1"></i> Diproses oleh: {{ $booking->handled_by }}
@@ -57,6 +72,11 @@
                                     Peminjaman Labkom Anda (<strong>{{ $booking->lab_name }}</strong>) telah dibatalkan.
                                 @endif
                             </p>
+                            <div class="alert alert-warning d-inline-block px-4 py-2 mb-4">
+                                <i class="bi bi-ticket-perforated me-2"></i>
+                                Kode Booking Anda: <strong class="ms-1">{{ $booking->tracking_code }}</strong>
+                            </div>
+                            <p class="text-muted small">Simpan kode ini untuk memantau status atau mengajukan perubahan booking.</p>
                             @if($booking->handled_by)
                                 <div class="badge {{ $booking->status == 'rejected' ? 'bg-danger bg-opacity-10 text-danger border-danger' : 'bg-secondary bg-opacity-10 text-secondary border-secondary' }} border p-2 mb-2">
                                     <i class="bi {{ $booking->status == 'rejected' ? 'bi-person-x-fill' : 'bi-person-dash-fill' }} me-1"></i> Diproses oleh: {{ $booking->handled_by }}
@@ -73,7 +93,7 @@
                         </div>
                         <h2 class="fw-bold mb-3">Booking Sedang Diproses</h2>
                         <p class="text-muted-custom fs-5 mb-4">
-                            Permintaan peminjaman Labkom Anda telah terkirim dan sedang menunggu persetujuan dari tim Admin.
+                            Permintaan peminjaman Labkom Anda telah terkirim dan sedang menunggu persetujuan dari tim IT Infrastructure.
                         </p>
                     @endif
                     

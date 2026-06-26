@@ -52,6 +52,9 @@
                                                 <div>
                                                     <h5 class="fw-bold mb-1">{{ $booking->lab_name }}</h5>
                                                     <p class="text-muted-custom mb-0 small"><i class="bi bi-building"></i> {{ $booking->pic_name }}</p>
+                                                    <p class="mb-0 mt-1">
+                                                        <span class="badge bg-secondary font-monospace">{{ $booking->tracking_code }}</span>
+                                                    </p>
                                                 </div>
                                                 <div>
                                                     @if($booking->status == 'pending')

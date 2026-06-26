@@ -71,7 +71,46 @@ class NotificationService
         } catch (\Exception $e) {
             Log::error("Failed to send WA New Booking Notification: " . $e->getMessage());
         }
+
+        /**
+     * Kirim WA ke user (pemohon)
+     */
+        $userPhone = $booking->whatsapp;
+if ($userPhone && $gatewayUrl) {
+    $date = \Carbon\Carbon::parse($booking->date)->format('d M Y');
+    $time = \Carbon\Carbon::parse($booking->start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($booking->end_time)->format('H:i');
+    $trackUrl = secure_url('/track/' . $booking->tracking_code);
+
+    $userMessage  = "Halo *{$booking->pic_name}*,\n\n";
+    $userMessage .= "Permintaan peminjaman Labkom Anda telah kami terima dan sedang menunggu persetujuan.\n\n";
+    $userMessage .= "Kode Booking: *{$booking->tracking_code}*\n";
+    $userMessage .= "Labkom: {$booking->lab_name}\n";
+    $userMessage .= "Tanggal: {$date}\n";
+    $userMessage .= "Waktu: {$time}\n\n";
+    $userMessage .= "Simpan kode booking Anda untuk memantau status atau mengajukan perubahan.\n";
+    $userMessage .= "Cek Status: {$trackUrl}";
+
+    try {
+        Http::timeout(5)->post(rtrim($gatewayUrl, '/') . '/send', [
+            'phone' => $userPhone,
+            'message' => $userMessage,
+        ]);
+    } catch (\Exception $e) {
+        Log::error("Failed to send WA New Booking to user: " . $e->getMessage());
     }
+}
+
+// Kirim email ke user
+try {
+    \Illuminate\Support\Facades\Mail::to($booking->email)
+        ->send(new \App\Mail\BookingReceivedMail($booking, $totalRecurringWeeks));
+} catch (\Exception $e) {
+    Log::error("Failed to send email New Booking to user: " . $e->getMessage());
+}
+    }
+
+    
+
 
     /**
      * Send a notification when a user requests a booking change.
