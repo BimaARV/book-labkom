@@ -108,7 +108,14 @@
                                                 </div>
                                             @elseif(in_array($booking->status, ['pending', 'accepted']))
                                                 <div class="mt-3 text-end">
-                                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="openChangeModal({{ $booking->id }}, '{{ $booking->lab_name }}')">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="openChangeModal(
+                                                                                                                    {{ $booking->id }},
+                                                                                                                    '{{ $booking->lab_name }}',
+                                                                                                                    '{{ $booking->email }}',
+                                                                                                                    '{{ \Carbon\Carbon::parse($booking->date)->format('Y-m-d') }}',
+                                                                                                                    '{{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }}',
+                                                                                                                    '{{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}'
+                                                                                                                )">
                                                         <i class="bi bi-pencil-square me-1"></i> Ajukan Perubahan
                                                     </button>
                                                 </div>
@@ -141,7 +148,7 @@
               </div>
             <form action="{{ route('booking.change-request') }}" method="POST">
                 @csrf
-                <input type="hidden" name="email" value="{{ $search }}">
+                <input type="hidden" name="email" id="change_email">
                 <div class="modal-body">
                     <input type="hidden" name="booking_id" id="change_booking_id">
                     
@@ -206,13 +213,20 @@
 
 @push('scripts')
 <script>
-    function openChangeModal(bookingId, labName) {
-        document.getElementById('change_booking_id').value = bookingId;
-        document.getElementById('current_lab_name').textContent = labName;
-        document.getElementById('change_type').value = '';
-        toggleChangeFields();
-        new bootstrap.Modal(document.getElementById('changeRequestModal')).show();
-    }
+    function openChangeModal(bookingId, labName, email, date, startTime, endTime) {
+    document.getElementById('change_booking_id').value = bookingId;
+    document.getElementById('change_email').value = email;  // fix issue 5
+    document.getElementById('current_lab_name').textContent = labName;
+    document.getElementById('change_type').value = '';
+
+    // Pre-fill reschedule fields (fix issue 4)
+    document.querySelector('input[name="requested_date"]').value = date;
+    document.querySelector('input[name="requested_start_time"]').value = startTime;
+    document.querySelector('input[name="requested_end_time"]').value = endTime;
+
+    toggleChangeFields();
+    new bootstrap.Modal(document.getElementById('changeRequestModal')).show();
+}
 
     function toggleChangeFields() {
         const type = document.getElementById('change_type').value;
