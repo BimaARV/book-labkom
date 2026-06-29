@@ -55,7 +55,17 @@ class ChangeRequestController extends Controller
         if ($request->action === 'approve') {
             // Terapkan perubahan ke booking asli setelah notifikasi dikirim
             if ($changeRequest->type === 'cancellation') {
-                $booking->status = 'cancelled';
+                if ($changeRequest->cancel_mode === 'partial') {
+                    \App\Models\Booking::where('group_id', $booking->group_id)
+                        ->where('date', '>=', $changeRequest->cancel_from_date)
+                        ->update(['status' => 'cancelled']);
+                } elseif ($booking->group_id && $changeRequest->cancel_mode === 'all') {
+                    \App\Models\Booking::where('group_id', $booking->group_id)
+                        ->update(['status' => 'cancelled']);
+                } else {
+                    $booking->status = 'cancelled';
+                    $booking->save();
+                }
             } elseif ($changeRequest->type === 'reschedule') {
                 $booking->date = $changeRequest->requested_date;
                 $booking->start_time = $changeRequest->requested_start_time;

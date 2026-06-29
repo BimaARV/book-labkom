@@ -58,6 +58,15 @@
                                         @endif
                                     </strong><br>
                                     Lab Tujuan: <br><strong>{{ $req->requested_is_all_labs ? \App\Models\Laboratory::getAllLabsName() : optional($req->requestedLaboratory)->name }}</strong>
+                                @elseif($req->type == 'cancellation')
+                                    @if($req->cancel_mode == 'partial')
+                                        <span class="text-danger">Dibatalkan sebagian</span><br>
+                                        Mulai tgl: <strong>{{ \Carbon\Carbon::parse($req->cancel_from_date)->format('d/m/Y') }}</strong>
+                                    @elseif($req->cancel_mode == 'all')
+                                        <span class="text-danger">Dibatalkan seluruh jadwal rutin</span>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif

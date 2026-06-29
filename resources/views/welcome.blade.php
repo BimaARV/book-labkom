@@ -437,6 +437,21 @@ if (durationSelect) {
         }
     });
 }
+
+    // Auto scroll and focus for pre-filled booking from Cek Ketersediaan
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('lab_id') && urlParams.has('date')) {
+        const form = document.getElementById('bookingForm');
+        if (form) {
+            setTimeout(() => {
+                form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const picInput = document.getElementById('pic_name');
+                if (picInput) {
+                    setTimeout(() => picInput.focus(), 500);
+                }
+            }, 100);
+        }
+    }
 });
 </script>
 @endpush

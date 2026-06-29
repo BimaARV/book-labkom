@@ -114,7 +114,8 @@
                                                                                                                     '{{ $booking->email }}',
                                                                                                                     '{{ \Carbon\Carbon::parse($booking->date)->format('Y-m-d') }}',
                                                                                                                     '{{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }}',
-                                                                                                                    '{{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}'
+                                                                                                                    '{{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}',
+                                                                                                                    '{{ $booking->group_id ? 1 : 0 }}'
                                                                                                                 )">
                                                         <i class="bi bi-pencil-square me-1"></i> Ajukan Perubahan
                                                     </button>
@@ -124,6 +125,9 @@
                                     </div>
                                 </div>
                             @endforeach
+                        </div>
+                        <div class="d-flex justify-content-center mt-4">
+                            {{ $bookings->links('pagination::bootstrap-5') }}
                         </div>
                     @else
                         <div class="alert alert-warning text-center py-4">
@@ -195,6 +199,28 @@
                         </select>
                     </div>
 
+                    <div id="cancellation_fields" style="display: none;" class="bg-light p-3 rounded mb-3 border">
+                        <div id="routine_cancellation_options" style="display: none;">
+                            <h6 class="fw-bold mb-2">Opsi Pembatalan Rutin</h6>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="cancel_mode" id="cancel_all" value="all" checked>
+                                <label class="form-check-label" for="cancel_all">
+                                    Batalkan Seluruh Jadwal Rutin
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="cancel_mode" id="cancel_partial" value="partial">
+                                <label class="form-check-label" for="cancel_partial">
+                                    Batalkan dari Tanggal Ini Saja
+                                </label>
+                            </div>
+                            <div class="mt-2" id="cancel_date_field" style="display: none;">
+                                <label class="form-label">Tanggal Mulai Batal</label>
+                                <input type="date" name="cancel_from_date" id="cancel_from_date" class="form-control" readonly>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label fw-bold">Alasan Pengajuan</label>
                         <textarea name="reason" class="form-control" rows="3" placeholder="Jelaskan alasan pengajuan Anda..." required></textarea>
@@ -213,32 +239,57 @@
 
 @push('scripts')
 <script>
-    function openChangeModal(bookingId, labName, email, date, startTime, endTime) {
-    document.getElementById('change_booking_id').value = bookingId;
-    document.getElementById('change_email').value = email;  // fix issue 5
-    document.getElementById('current_lab_name').textContent = labName;
-    document.getElementById('change_type').value = '';
+    let isRecurringBooking = false;
 
-    // Pre-fill reschedule fields (fix issue 4)
-    document.querySelector('input[name="requested_date"]').value = date;
-    document.querySelector('input[name="requested_start_time"]').value = startTime;
-    document.querySelector('input[name="requested_end_time"]').value = endTime;
+    function openChangeModal(bookingId, labName, email, date, startTime, endTime, isRecurring) {
+        document.getElementById('change_booking_id').value = bookingId;
+        document.getElementById('change_email').value = email;  // fix issue 5
+        document.getElementById('current_lab_name').textContent = labName;
+        document.getElementById('change_type').value = '';
 
-    toggleChangeFields();
-    new bootstrap.Modal(document.getElementById('changeRequestModal')).show();
-}
+        // Pre-fill reschedule fields (fix issue 4)
+        document.querySelector('input[name="requested_date"]').value = date;
+        document.querySelector('input[name="requested_start_time"]').value = startTime;
+        document.querySelector('input[name="requested_end_time"]').value = endTime;
+
+        isRecurringBooking = (isRecurring == '1');
+        document.getElementById('cancel_from_date').value = date;
+        
+        // Reset radio buttons for cancellation
+        document.getElementById('cancel_all').checked = true;
+        document.getElementById('cancel_date_field').style.display = 'none';
+
+        toggleChangeFields();
+        new bootstrap.Modal(document.getElementById('changeRequestModal')).show();
+    }
 
     function toggleChangeFields() {
         const type = document.getElementById('change_type').value;
         const resFields = document.getElementById('reschedule_fields');
         const relFields = document.getElementById('relocation_fields');
+        const cancelFields = document.getElementById('cancellation_fields');
+        const routineCancelOptions = document.getElementById('routine_cancellation_options');
 
         resFields.style.display = type === 'reschedule' ? 'block' : 'none';
         relFields.style.display = type === 'relocation' ? 'block' : 'none';
+        
+        if (type === 'cancellation' && isRecurringBooking) {
+            cancelFields.style.display = 'block';
+            routineCancelOptions.style.display = 'block';
+        } else {
+            cancelFields.style.display = 'none';
+            routineCancelOptions.style.display = 'none';
+        }
 
         // Required toggles
         resFields.querySelectorAll('input').forEach(i => i.required = (type === 'reschedule'));
         relFields.querySelectorAll('select').forEach(s => s.required = (type === 'relocation'));
     }
+
+    document.querySelectorAll('input[name="cancel_mode"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            document.getElementById('cancel_date_field').style.display = this.value === 'partial' ? 'block' : 'none';
+        });
+    });
 </script>
 @endpush

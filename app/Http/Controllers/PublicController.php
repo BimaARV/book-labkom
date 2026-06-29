@@ -71,7 +71,7 @@ class PublicController extends Controller
             ]);
             $bookings = Booking::with(['laboratory', 'changeRequests' => function($q) {
                 $q->where('status', 'pending');
-            }])->where('email', $search)->orWhere('tracking_code', $search)->orderBy('created_at', 'desc')->get();
+            }])->where('email', $search)->orWhere('tracking_code', $search)->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
         }
 
         return view('booking-list', compact('bookings', 'search', 'laboratories'));
@@ -139,6 +139,16 @@ class PublicController extends Controller
             $data['requested_is_all_labs'] = $requestedIsAllLabs;
             $data['original_laboratory_id'] = $booking->laboratory_id;
             $data['original_is_all_labs'] = $booking->is_all_labs;
+        } elseif ($request->type == 'cancellation') {
+            if ($booking->group_id && $request->cancel_mode == 'partial') {
+                $request->validate([
+                    'cancel_from_date' => 'required|date'
+                ]);
+                $data['cancel_mode'] = 'partial';
+                $data['cancel_from_date'] = $request->cancel_from_date;
+            } elseif ($booking->group_id && $request->cancel_mode == 'all') {
+                $data['cancel_mode'] = 'all';
+            }
         }
 
         $changeReq = \App\Models\BookingChangeRequest::create($data);
