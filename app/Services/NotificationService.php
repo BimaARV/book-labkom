@@ -15,7 +15,7 @@ class NotificationService
     /**
      * Send a notification for a newly created booking to the WA Group.
      */
-    public function sendNewBookingNotification(Booking $booking, $totalRecurringWeeks = 1)
+    public function sendNewBookingNotification(Booking $booking, $totalSessions = 1, $frequency = null)
     {
         $settings = Setting::whereIn('key', ['WA_GATEWAY_URL', 'WA_GROUP_ID'])->pluck('value', 'key');
         $gatewayUrl = $this->getInternalGatewayUrl($settings['WA_GATEWAY_URL'] ?? null);
@@ -47,14 +47,16 @@ class NotificationService
         $message .= "Email: {$booking->email}\n";
         $message .= "Keperluan: {$booking->purpose}\n";
         
-        if ($totalRecurringWeeks > 1) {
+        if ($totalSessions > 1 && $frequency) {
             $lastBooking = \App\Models\Booking::where('group_id', $booking->group_id)->orderBy('date', 'desc')->first();
+            $freqLabel = $frequency === 'daily' ? 'Harian' : 'Setiap Minggu';
+            $sesiLabel = $frequency === 'daily' ? "{$totalSessions} Hari" : "{$totalSessions} Minggu";
+            
             if ($lastBooking && $lastBooking->date != $booking->date) {
                 $endDateStr = \Carbon\Carbon::parse($lastBooking->date)->format('d M Y');
-                $totalLabel = $totalRecurringWeeks > 7 ? "{$totalRecurringWeeks} Minggu" : "{$totalRecurringWeeks} Hari";
-                $message .= "Pemesanan Rutin: Ya ({$date} s/d {$endDateStr}, Total {$totalRecurringWeeks} Sesi)\n\n";
+                $message .= "Pemesanan Rutin: Ya\nFrekuensi: {$freqLabel}\nPeriode: {$date} - {$endDateStr}\nTotal Sesi: {$sesiLabel}\n\n";
             } else {
-                $message .= "Pemesanan Rutin: Ya (Total {$totalRecurringWeeks} Minggu berturut-turut)\n\n";
+                $message .= "Pemesanan Rutin: Ya\nFrekuensi: {$freqLabel}\nTotal Sesi: {$sesiLabel}\n\n";
             }
         } else {
             $message .= "\n";
@@ -103,7 +105,7 @@ if ($userPhone && $gatewayUrl) {
 // Kirim email ke user
 try {
     \Illuminate\Support\Facades\Mail::to($booking->email)
-        ->send(new \App\Mail\BookingReceivedMail($booking, $totalRecurringWeeks));
+        ->send(new \App\Mail\BookingReceivedMail($booking, $totalSessions, $frequency));
 } catch (\Exception $e) {
     Log::error("Failed to send email New Booking to user: " . $e->getMessage());
 }

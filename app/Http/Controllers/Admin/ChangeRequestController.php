@@ -70,11 +70,12 @@ class ChangeRequestController extends Controller
                 $booking->date = $changeRequest->requested_date;
                 $booking->start_time = $changeRequest->requested_start_time;
                 $booking->end_time = $changeRequest->requested_end_time;
+                $booking->save();
             } elseif ($changeRequest->type === 'relocation') {
                 $booking->laboratory_id = $changeRequest->requested_laboratory_id;
                 $booking->is_all_labs = $changeRequest->requested_is_all_labs;
+                $booking->save();
             }
-            $booking->save();
         }
 
         return back()->with('success', "Permintaan perubahan berhasil {$actionText}.");

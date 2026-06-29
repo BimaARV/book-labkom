@@ -51,10 +51,17 @@
                 <th>Tanggal</th>
                 <td>
                     {{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }}
-                    @if($booking->group_id && $totalWeeks > 1)
-                        @php $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)->max('date'); @endphp
+                    @if($booking->group_id && $totalSessions > 1 && $frequency)
+                        @php 
+                            $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)->max('date'); 
+                            $freqLabel = $frequency === 'daily' ? 'Harian' : 'Setiap Minggu';
+                            $sesiLabel = $frequency === 'daily' ? "{$totalSessions} Hari" : "{$totalSessions} Minggu";
+                        @endphp
                         @if($recurringEnd && $recurringEnd != $booking->date)
-                            <br><small style="color:#64748b;">&#8635; Rutin s/d {{ \Carbon\Carbon::parse($recurringEnd)->format('d M Y') }} ({{ $totalWeeks }} Sesi)</small>
+                            <br><small style="color:#64748b; font-weight: bold;">Pemesanan Rutin: Ya</small>
+                            <br><small style="color:#64748b;">Frekuensi: {{ $freqLabel }}</small>
+                            <br><small style="color:#64748b;">Periode Rutin: {{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }} - {{ \Carbon\Carbon::parse($recurringEnd)->format('d M Y') }}</small>
+                            <br><small style="color:#64748b;">Total Sesi: {{ $sesiLabel }}</small>
                         @endif
                     @endif
                 </td>

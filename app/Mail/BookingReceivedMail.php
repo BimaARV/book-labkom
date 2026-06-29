@@ -15,7 +15,8 @@ class BookingReceivedMail extends Mailable
 
     public function __construct(
         public Booking $booking,
-        public int $totalWeeks = 1
+        public int $totalSessions = 1,
+        public ?string $frequency = null
     ) {}
 
     public function envelope(): Envelope

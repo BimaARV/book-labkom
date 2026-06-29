@@ -159,8 +159,9 @@ class BookingController extends Controller
 
         // Kirim notifikasi setelah semua booking tersimpan di DB
         $notificationService = new NotificationService();
-        $totalWeeks = count($datesToBook);
-        $notificationService->sendNewBookingNotification($firstBooking, $totalWeeks);
+        $totalSessions = count($datesToBook);
+        $frequency = $request->is_recurring ? ($request->recurring_frequency ?? 'weekly') : null;
+        $notificationService->sendNewBookingNotification($firstBooking, $totalSessions, $frequency);
 
         return redirect()->route('booking.track', ['code' => $firstBooking->tracking_code]);
     }
