@@ -24,7 +24,7 @@ class BusinessUnitController extends Controller
         $businessUnit = BusinessUnit::create($request->all());
         
         $notificationService = new \App\Services\NotificationService();
-        $notificationService->sendMasterDataNotification('Instansi / Unit Bisnis', 'ditambahkan', $businessUnit->name, auth()->user());
+        $notificationService->sendMasterDataNotification('Unit Bisnis', 'ditambahkan', $businessUnit->name, auth()->user());
 
         return back()->with('success', 'Unit Bisnis berhasil ditambahkan.');
     }
@@ -39,7 +39,7 @@ class BusinessUnitController extends Controller
         $businessUnit->update($request->all());
 
         $notificationService = new \App\Services\NotificationService();
-        $notificationService->sendMasterDataNotification('Instansi / Unit Bisnis', 'diperbarui', $businessUnit->name, auth()->user());
+        $notificationService->sendMasterDataNotification('Unit Bisnis', 'diperbarui', $businessUnit->name, auth()->user());
 
         return back()->with('success', 'Unit Bisnis berhasil diperbarui.');
     }
@@ -50,7 +50,7 @@ class BusinessUnitController extends Controller
         $businessUnit->delete();
 
         $notificationService = new \App\Services\NotificationService();
-        $notificationService->sendMasterDataNotification('Instansi / Unit Bisnis', 'dihapus', $unitName, auth()->user());
+        $notificationService->sendMasterDataNotification('Unit Bisnis', 'dihapus', $unitName, auth()->user());
 
         return back()->with('success', 'Unit Bisnis berhasil dihapus.');
     }

@@ -29,7 +29,7 @@ class NotificationService
         $labName = $booking->lab_name;
         $unitName = optional($booking->businessUnit)->name;
         $subUnitName = optional($booking->subBusinessUnit)->name;
-        $instansi = $subUnitName ? "{$unitName} ({$subUnitName})" : $unitName;
+        $unitBisnis = $subUnitName ? "{$unitName} ({$subUnitName})" : $unitName;
         
         $date = \Carbon\Carbon::parse($booking->date)->format('d M Y');
         $time = \Carbon\Carbon::parse($booking->start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($booking->end_time)->format('H:i');
@@ -39,7 +39,7 @@ class NotificationService
         $message = "INFO: PEMINJAMAN BARU\n\n";
         $message .= "Ada permintaan peminjaman Labkom baru:\n\n";
         $message .= "Kode Booking: {$booking->tracking_code}\n";
-        $message .= "PIC: {$booking->pic_name} ({$instansi})\n";
+        $message .= "PIC: {$booking->pic_name} ({$unitBisnis})\n";
         $message .= "Labkom: {$labName}\n";
         $message .= "Tanggal: {$date}\n";
         $message .= "Waktu: {$time}\n";
@@ -332,7 +332,7 @@ try {
         $labName = $booking->lab_name;
         $unitName = optional($booking->businessUnit)->name;
         $subUnitName = optional($booking->subBusinessUnit)->name;
-        $instansi = $subUnitName ? "{$unitName} ({$subUnitName})" : $unitName;
+        $unitBisnis = $subUnitName ? "{$unitName} ({$subUnitName})" : $unitName;
 
         $date = \Carbon\Carbon::parse($booking->date)->format('d M Y');
         $recurringInfo = '';
@@ -356,7 +356,7 @@ try {
         $trackUrl = secure_url('/track/' . $booking->tracking_code);
 
         $dataTerkini = "*Detail Peminjaman:*\n";
-        $dataTerkini .= "Instansi: {$instansi}\n";
+        $dataTerkini .= "Unit Bisnis: {$unitBisnis}\n";
         $dataTerkini .= "Labkom: {$labName}\n";
         $dataTerkini .= "Tanggal: {$date}{$recurringInfo}\n";
         $dataTerkini .= "Waktu: {$time}\n";
@@ -462,7 +462,7 @@ try {
         $labName = $booking->lab_name;
         $unitName = optional($booking->businessUnit)->name;
         $subUnitName = optional($booking->subBusinessUnit)->name;
-        $instansi = $subUnitName ? "{$unitName} ({$subUnitName})" : $unitName;
+        $unitBisnis = $subUnitName ? "{$unitName} ({$subUnitName})" : $unitName;
         $date = \Carbon\Carbon::parse($booking->date)->format('d M Y');
         $recurringInfo = '';
         if ($booking->group_id) {
@@ -484,7 +484,7 @@ try {
             $messageGroup .= "*Detail Perubahan:*\n- {$changesText}\n\n";
             $messageGroup .= "*Data Terkini:*\n";
             $messageGroup .= "Kode Booking: {$booking->tracking_code}\n";
-            $messageGroup .= "Instansi: {$instansi}\n";
+            $messageGroup .= "Unit Bisnis: {$unitBisnis}\n";
             $messageGroup .= "Labkom: {$labName}\n";
             $messageGroup .= "Tanggal: {$date}{$recurringInfo}\n";
             $messageGroup .= "Waktu: {$time}\n";
@@ -519,7 +519,7 @@ try {
                 $messagePic .= "- " . implode("\n- ", $changes) . "\n\n";
                 $messagePic .= "*Detail Pemesanan Terkini:*\n";
                 $messagePic .= "Kode Booking: {$booking->tracking_code}\n";
-                $messagePic .= "Instansi: {$instansi}\n";
+                $messagePic .= "Unit Bisnis: {$unitBisnis}\n";
                 $messagePic .= "Labkom: {$labName}\n";
                 $messagePic .= "Tanggal: {$date}{$recurringInfo}\n";
                 $messagePic .= "Waktu: {$time}\n";

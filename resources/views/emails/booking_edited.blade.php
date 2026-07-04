@@ -93,7 +93,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <th>Instansi</th>
+                    <th>Unit Bisnis</th>
                     <td>
                         {{ optional($booking->businessUnit)->name }}
                         @if($booking->subBusinessUnit)

@@ -40,10 +40,27 @@ class ReportController extends Controller
         }
 
         // Fetch bookings within range
-        $bookings = Booking::with(['laboratory', 'businessUnit', 'subBusinessUnit'])
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->orderBy('created_at', 'asc')
-            ->get();
+        $query = Booking::with(['laboratory', 'businessUnit', 'subBusinessUnit'])
+            ->whereBetween('created_at', [$startDate, $endDate]);
+
+        // Filter by business unit if specified
+        if ($request->filled('business_unit_id')) {
+            $query->where('business_unit_id', $request->business_unit_id);
+            $buName = \App\Models\BusinessUnit::find($request->business_unit_id)?->name;
+            if ($buName) {
+                $title .= " - {$buName}";
+            }
+        }
+
+        if ($request->filled('sub_business_unit_id')) {
+            $query->where('sub_business_unit_id', $request->sub_business_unit_id);
+            $subName = \App\Models\SubBusinessUnit::find($request->sub_business_unit_id)?->name;
+            if ($subName) {
+                $title .= " / {$subName}";
+            }
+        }
+
+        $bookings = $query->orderBy('created_at', 'asc')->get();
 
         // Calculate statistics
         $stats = [

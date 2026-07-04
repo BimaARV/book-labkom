@@ -102,6 +102,8 @@ class StatisticController extends Controller
             $labChartData['data'] = array_column($labArray, 'total');
         }
 
-        return view('admin.statistics.index', compact('businessUnitChartData', 'labChartData', 'validTotalBookings'));
+        $businessUnits = \App\Models\BusinessUnit::with('subUnits')->orderBy('name')->get();
+
+        return view('admin.statistics.index', compact('businessUnitChartData', 'labChartData', 'validTotalBookings', 'businessUnits'));
     }
 }

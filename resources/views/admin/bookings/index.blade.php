@@ -18,9 +18,9 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label small text-muted fw-medium mb-1">Instansi</label>
+                    <label class="form-label small text-muted fw-medium mb-1">Unit Bisnis</label>
                     <select name="business_unit_id" class="form-select form-select-sm">
-                        <option value="">Semua Instansi</option>
+                        <option value="">Semua Unit Bisnis</option>
                         @foreach($businessUnits as $unit)
                             <option value="{{ $unit->id }}" {{ request('business_unit_id') == $unit->id ? 'selected' : '' }}>{{ Str::limit($unit->name, 30) }}</option>
                         @endforeach
@@ -82,7 +82,7 @@
                         <th>Tgl Dibuat</th>
                         <th>Kode Booking</th>
                         <th>PIC</th>
-                        <th>Instansi</th>
+                        <th>Unit Bisnis</th>
                         <th>Keperluan</th>
                         <th>Labkom</th>
                         <th>Jadwal Peminjaman</th>

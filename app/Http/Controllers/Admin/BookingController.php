@@ -86,7 +86,13 @@ class BookingController extends Controller
     {
         $laboratories = Laboratory::where('status', 'active')->get();
         $businessUnits = BusinessUnit::with('subUnits')->get();
-        return view('admin.bookings.edit', compact('booking', 'laboratories', 'businessUnits'));
+        
+        $maxRecurringDate = null;
+        if ($booking->group_id) {
+            $maxRecurringDate = Booking::where('group_id', $booking->group_id)->max('date');
+        }
+        
+        return view('admin.bookings.edit', compact('booking', 'laboratories', 'businessUnits', 'maxRecurringDate'));
     }
 
     public function update(Request $request, Booking $booking)
@@ -274,6 +280,78 @@ class BookingController extends Controller
                 $notificationService = new NotificationService();
                 $notifyPic = $request->has('notify_pic');
                 $notificationService->sendBookingEditedNotification($booking, Auth::user(), $changes, $notifyPic);
+            }
+        }
+
+        // Handle recurring end date change
+        if ($booking->group_id && $request->filled('recurring_end_date')) {
+            $currentMaxDate = Booking::where('group_id', $booking->group_id)->max('date');
+            $newEndDate = \Carbon\Carbon::parse($request->recurring_end_date);
+            $currentMax = \Carbon\Carbon::parse($currentMaxDate);
+
+            if (!$newEndDate->equalTo($currentMax)) {
+                if ($newEndDate->lt($currentMax)) {
+                    // Shorten: delete future bookings after new end date (only pending/accepted)
+                    $deleted = Booking::where('group_id', $booking->group_id)
+                        ->where('date', '>', $newEndDate->format('Y-m-d'))
+                        ->whereIn('status', ['pending', 'accepted'])
+                        ->delete();
+
+                    \App\Models\ActivityLog::create([
+                        'user_id' => Auth::id(),
+                        'action' => 'Perubahan Jadwal Rutin',
+                        'description' => "Memperpendek jadwal rutin grup {$booking->group_id} ke {$newEndDate->format('d M Y')}. {$deleted} jadwal dihapus.",
+                        'ip_address' => $request->ip()
+                    ]);
+                } else {
+                    // Extend: create new bookings after current max date
+                    // Detect interval from existing group bookings
+                    $groupDates = Booking::where('group_id', $booking->group_id)
+                        ->orderBy('date', 'asc')
+                        ->pluck('date')
+                        ->map(fn($d) => \Carbon\Carbon::parse($d));
+
+                    $interval = 'weekly'; // default
+                    if ($groupDates->count() >= 2) {
+                        $diff = $groupDates[0]->diffInDays($groupDates[1]);
+                        $interval = $diff <= 1 ? 'daily' : 'weekly';
+                    }
+
+                    $currentDate = $currentMax->copy();
+                    $interval === 'daily' ? $currentDate->addDay() : $currentDate->addWeek();
+
+                    $newBookingsCount = 0;
+                    while ($currentDate->lte($newEndDate)) {
+                        $trackingCode = 'cbt-' . $currentDate->format('Ymd') . '-' . strtoupper(\Illuminate\Support\Str::random(4));
+
+                        Booking::create([
+                            'tracking_code' => $trackingCode,
+                            'group_id' => $booking->group_id,
+                            'pic_name' => $booking->pic_name,
+                            'laboratory_id' => $booking->laboratory_id,
+                            'is_all_labs' => $booking->is_all_labs,
+                            'business_unit_id' => $booking->business_unit_id,
+                            'sub_business_unit_id' => $booking->sub_business_unit_id,
+                            'date' => $currentDate->format('Y-m-d'),
+                            'start_time' => $booking->start_time,
+                            'end_time' => $booking->end_time,
+                            'whatsapp' => $booking->whatsapp,
+                            'email' => $booking->email,
+                            'purpose' => $booking->purpose,
+                            'status' => 'pending',
+                        ]);
+
+                        $newBookingsCount++;
+                        $interval === 'daily' ? $currentDate->addDay() : $currentDate->addWeek();
+                    }
+
+                    \App\Models\ActivityLog::create([
+                        'user_id' => Auth::id(),
+                        'action' => 'Perubahan Jadwal Rutin',
+                        'description' => "Memperpanjang jadwal rutin grup {$booking->group_id} ke {$newEndDate->format('d M Y')}. {$newBookingsCount} jadwal baru dibuat.",
+                        'ip_address' => $request->ip()
+                    ]);
+                }
             }
         }
 

@@ -117,9 +117,9 @@ class BookingController extends Controller
         if (count($conflictingDates) > 0) {
             $unitName = optional($firstConflict->businessUnit)->name;
             $subUnitName = optional($firstConflict->subBusinessUnit)->name;
-            $instansi = $subUnitName ? "{$unitName}/{$subUnitName}" : $unitName;
+            $unitBisnis = $subUnitName ? "{$unitName}/{$subUnitName}" : $unitName;
 
-            $errorMsg = "Labkom sudah terpakai pada waktu yang sama oleh {$instansi}";
+            $errorMsg = "Labkom sudah terpakai pada waktu yang sama oleh {$unitBisnis}";
             return back()->withErrors(['error' => $errorMsg])->withInput();
         }
 

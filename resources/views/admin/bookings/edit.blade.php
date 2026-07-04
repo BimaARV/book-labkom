@@ -16,7 +16,7 @@
             <h5 class="fw-bold text-primary mb-3"><i class="bi bi-person-badge me-2"></i>Informasi Pemesan</h5>
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
-                    <label class="form-label fw-medium">PIC / Instansi <span class="text-danger">*</span></label>
+                    <label class="form-label fw-medium">PIC / Unit Bisnis <span class="text-danger">*</span></label>
                     <input type="text" name="pic_name" class="form-control" value="{{ old('pic_name', $booking->pic_name) }}" required>
                 </div>
                 <div class="col-md-4">
@@ -79,6 +79,30 @@
                 </div>
             </div>
 
+            @if($booking->group_id && $maxRecurringDate)
+            <div class="p-4 rounded-3 border mb-4" style="background-color: rgba(var(--bs-warning-rgb), 0.05);">
+                <h5 class="fw-bold text-warning mb-2"><i class="bi bi-arrow-repeat me-2"></i>Jadwal Rutin</h5>
+                <p class="text-muted small mb-3">Booking ini merupakan bagian dari jadwal rutin. Anda dapat mengubah tanggal berakhir jadwal rutin di bawah ini.</p>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium">Tanggal Berakhir Saat Ini</label>
+                        <input type="text" class="form-control" value="{{ \Carbon\Carbon::parse($maxRecurringDate)->format('d M Y') }}" disabled>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium">Tanggal Berakhir Baru</label>
+                        <input type="date" name="recurring_end_date" class="form-control" value="{{ old('recurring_end_date', \Carbon\Carbon::parse($maxRecurringDate)->format('Y-m-d')) }}">
+                        <div class="form-text small text-muted mt-1">Kosongkan jika tidak ingin mengubah.</div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="text-muted small">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Jika diperpendek, jadwal setelah tanggal tersebut akan dihapus (status pending/accepted). Jika diperpanjang, jadwal baru akan dibuat otomatis.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <h5 class="fw-bold text-primary mb-3"><i class="bi bi-info-circle me-2"></i>Status Booking</h5>
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
@@ -106,7 +130,7 @@
 
             <div class="mt-5 p-4 rounded-3 border" style="background-color: rgba(var(--bs-primary-rgb), 0.03);">
                 <h5 class="fw-bold text-primary mb-2"><i class="bi bi-file-earmark-text me-2"></i>Laporan Pasca-Peminjaman</h5>
-                <p class="text-muted small mb-4">Gunakan area ini untuk melaporkan kondisi Labkom setelah selesai digunakan oleh instansi.</p>
+                <p class="text-muted small mb-4">Gunakan area ini untuk melaporkan kondisi Labkom setelah selesai digunakan oleh unit bisnis.</p>
                 
                 <div class="form-check form-switch mb-4">
                     <input class="form-check-input" type="checkbox" name="is_clean" id="is_clean" value="1" {{ old('is_clean', $booking->is_clean) ? 'checked' : '' }} style="cursor: pointer; transform: scale(1.1); margin-left: -2em;">

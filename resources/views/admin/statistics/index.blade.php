@@ -6,7 +6,7 @@
 <div class="mb-4 d-flex justify-content-between align-items-start flex-wrap gap-3">
     <div>
         <h3 class="fw-bold mb-1">Statistik Penggunaan</h3>
-        <p class="text-muted-custom">Detail persentase tingkat penggunaan Labkom dan keaktifan Instansi.</p>
+        <p class="text-muted-custom">Detail persentase tingkat penggunaan Labkom dan keaktifan Unit Bisnis.</p>
     </div>
     <div class="dropdown">
         <button class="btn btn-primary dropdown-toggle" type="button" id="downloadReportBtn" data-bs-toggle="dropdown" aria-expanded="false">
@@ -36,9 +36,26 @@
                         <label class="form-label fw-medium">Dari Tanggal <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" name="start_date" required max="{{ date('Y-m-d') }}">
                     </div>
-                    <div class="mb-0">
+                    <div class="mb-3">
                         <label class="form-label fw-medium">Sampai Tanggal <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" name="end_date" required max="{{ date('Y-m-d') }}">
+                    </div>
+                    <hr class="my-3">
+                    <p class="text-muted small mb-2"><i class="bi bi-funnel me-1"></i>Filter opsional (kosongkan untuk semua data)</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Unit Bisnis</label>
+                        <select name="business_unit_id" id="report_business_unit_id" class="form-select">
+                            <option value="">Semua Unit Bisnis</option>
+                            @foreach($businessUnits as $unit)
+                                <option value="{{ $unit->id }}" data-subunits="{{ json_encode($unit->subUnits) }}">{{ $unit->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-0" id="report_sub_unit_container" style="display: none;">
+                        <label class="form-label fw-medium">Sub Unit Bisnis</label>
+                        <select name="sub_business_unit_id" id="report_sub_business_unit_id" class="form-select">
+                            <option value="">Semua Sub Unit</option>
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -56,11 +73,11 @@
     </div>
 @else
     <div class="row g-4 mb-4">
-        <!-- Statistik Instansi / Unit Bisnis -->
+        <!-- Statistik Unit Bisnis / Sub Unit Bisnis -->
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-transparent border-bottom-0 pt-4 pb-0 text-center">
-                    <h5 class="fw-bold mb-0"><i class="bi bi-building text-primary me-2"></i> Instansi Teraktif</h5>
+                    <h5 class="fw-bold mb-0"><i class="bi bi-building text-primary me-2"></i> Unit Bisnis Teraktif</h5>
                     <button id="backToParentBtnStats" class="btn btn-sm btn-outline-primary mt-2" style="display:none;" onclick="resetBuChartStats()"><i class="bi bi-arrow-left me-1"></i> Kembali ke parent</button>
                 </div>
                 <div class="card-body mt-3 d-flex flex-column align-items-center justify-content-center">
@@ -274,6 +291,29 @@
                 }
             });
         }
+    }
+
+    // Report modal: dynamic sub unit dropdown
+    const reportBuSelect = document.getElementById('report_business_unit_id');
+    const reportSubContainer = document.getElementById('report_sub_unit_container');
+    const reportSubSelect = document.getElementById('report_sub_business_unit_id');
+
+    if (reportBuSelect) {
+        reportBuSelect.addEventListener('change', function() {
+            const selected = this.options[this.selectedIndex];
+            const subUnits = selected.dataset.subunits ? JSON.parse(selected.dataset.subunits) : [];
+
+            reportSubSelect.innerHTML = '<option value="">Semua Sub Unit</option>';
+
+            if (subUnits.length > 0) {
+                subUnits.forEach(sub => {
+                    reportSubSelect.innerHTML += `<option value="${sub.id}">${sub.name}</option>`;
+                });
+                reportSubContainer.style.display = '';
+            } else {
+                reportSubContainer.style.display = 'none';
+            }
+        });
     }
 </script>
 @endpush

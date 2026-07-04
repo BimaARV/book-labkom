@@ -204,7 +204,7 @@
     <div style="page-break-before: always;"></div>
     <div class="section-title" style="margin-top: 0;">Analisis Penggunaan Teratas</div>
     <div style="margin-bottom: 40px;">
-        <h4 style="color: #002B5C; margin-bottom: 5px;">Distribusi Penggunaan Berdasarkan Instansi/Fakultas</h4>
+        <h4 style="color: #002B5C; margin-bottom: 5px;">Distribusi Penggunaan Berdasarkan Unit Bisnis/Fakultas</h4>
         <p style="color: #666; font-size: 11px; margin-top: 0; margin-bottom: 15px;">(Menggambarkan pangsa pengguna yang paling aktif memanfaatkan fasilitas labkom)</p>
         <div style="text-align: center;">
             @if($buChartBase64)
@@ -224,7 +224,7 @@
                 <th width="5%">No</th>
                 <th width="15%">Tanggal</th>
                 <th width="20%">Nama PIC</th>
-                <th width="30%">Instansi</th>
+                <th width="30%">Unit Bisnis</th>
                 <th width="15%">Labkom</th>
                 <th width="15%">Status</th>
             </tr>

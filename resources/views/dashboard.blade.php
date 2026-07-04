@@ -106,7 +106,7 @@
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th>PIC / Instansi</th>
+                                <th>PIC / Unit Bisnis</th>
                                 <th>Labkom</th>
                                 <th>Jadwal</th>
                                 <th>Status</th>
@@ -151,9 +151,9 @@
                                   </td>
                                   <td class="text-center">
                                       @php
-                                        $instansi = optional($booking->businessUnit)->name;
+                                        $unitBisnis = optional($booking->businessUnit)->name;
                                         if($booking->subBusinessUnit) {
-                                            $instansi .= ' (' . $booking->subBusinessUnit->name . ')';
+                                            $unitBisnis .= ' (' . $booking->subBusinessUnit->name . ')';
                                         }
                                         $labName = $booking->is_all_labs ? \App\Models\Laboratory::getAllLabsName() : optional($booking->laboratory)->name;
                                       @endphp
@@ -169,7 +169,7 @@
                                           <button type="button" class="btn btn-sm btn-info text-dark accept-btn" title="Selesaikan" onclick="promptComplete('{{ route('admin.bookings.update', $booking) }}')"><i class="bi bi-check-all"></i></button>
                                           <button type="button" class="btn btn-sm btn-warning" title="Batalkan" onclick="promptCancel('{{ route('admin.bookings.update', $booking) }}')"><i class="bi bi-slash-circle"></i></button>
                                           @endif
-                                          <button type="button" class="btn btn-sm btn-primary" title="Detail" onclick="showDetail('{{ addslashes($booking->pic_name) }}', '{{ addslashes($instansi) }}', '{{ $booking->whatsapp }}', '{{ $booking->email }}', '{{ addslashes($labName) }}', '{{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }}', '{{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}', '{{ addslashes($booking->purpose) }}')"><i class="bi bi-eye"></i></button>
+                                          <button type="button" class="btn btn-sm btn-primary" title="Detail" onclick="showDetail('{{ addslashes($booking->pic_name) }}', '{{ addslashes($unitBisnis) }}', '{{ $booking->whatsapp }}', '{{ $booking->email }}', '{{ addslashes($labName) }}', '{{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }}', '{{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}', '{{ addslashes($booking->purpose) }}')"><i class="bi bi-eye"></i></button>
                                       </div>
                                   </td>
                               </tr>
@@ -186,10 +186,10 @@
     </div>
     
     <div class="col-lg-4">
-        <!-- Statistik Instansi (Donut Chart) -->
+        <!-- Statistik Unit Bisnis (Donut Chart) -->
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-transparent border-bottom-0 pt-4 pb-0 text-center">
-                <h6 class="text-uppercase fw-semibold mb-0" style="letter-spacing: 1px;">Statistik Instansi</h6>
+                <h6 class="text-uppercase fw-semibold mb-0" style="letter-spacing: 1px;">Statistik Unit Bisnis</h6>
                 <button id="buChartBackBtn" class="btn btn-sm btn-outline-primary mt-2" style="display: none;"><i class="bi bi-arrow-left me-1"></i> Kembali ke parent</button>
             </div>
             <div class="card-body p-4 d-flex justify-content-center">
@@ -252,7 +252,7 @@
                     <p class="mb-2"><strong>Labkom:</strong> <span class="text-primary">${lab}</span></p>
                     <p class="mb-2"><strong>Waktu:</strong> ${date} | ${time}</p>
                     <hr>
-                    <p class="mb-2"><strong>PIC / Instansi:</strong> ${pic} (${unit})</p>
+                    <p class="mb-2"><strong>PIC / Unit Bisnis:</strong> ${pic} (${unit})</p>
                     <p class="mb-2"><strong>Kontak:</strong> ${wa} | ${email}</p>
                     <p class="mb-2 mt-3"><strong>Keperluan:</strong><br><span>${purpose}</span></p>
                 </div>
