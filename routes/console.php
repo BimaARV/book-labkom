@@ -8,3 +8,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 \Illuminate\Support\Facades\Schedule::command('booking:check-ended')->everyMinute();
+\Illuminate\Support\Facades\Schedule::command('booking:send-reminders')->everyMinute();

@@ -352,6 +352,13 @@ class BookingController extends Controller
                         'ip_address' => $request->ip()
                     ]);
                 }
+                // Send notification to user about the change
+                if (isset($notificationService)) {
+                    $notificationService->sendRoutineScheduleChangedNotification($booking, $newEndDate->format('Y-m-d'));
+                } else {
+                    $notificationService = new \App\Services\NotificationService();
+                    $notificationService->sendRoutineScheduleChangedNotification($booking, $newEndDate->format('Y-m-d'));
+                }
             }
         }
 

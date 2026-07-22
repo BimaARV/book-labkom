@@ -36,6 +36,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/statistics', [StatisticController::class, 'index'])->name('statistics.index');
         Route::get('/reports/download-pdf', [\App\Http\Controllers\Admin\ReportController::class, 'downloadPdf'])->name('reports.pdf');
+        Route::get('/reports/download-csv', [\App\Http\Controllers\Admin\ReportController::class, 'downloadCsv'])->name('reports.csv');
+        Route::get('/reports/download-excel', [\App\Http\Controllers\Admin\ReportController::class, 'downloadExcel'])->name('reports.excel');
         Route::get('laboratories/search', [LaboratoryController::class, 'search'])->name('laboratories.search');
         Route::resource('laboratories', LaboratoryController::class);
 

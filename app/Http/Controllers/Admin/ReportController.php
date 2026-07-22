@@ -243,4 +243,63 @@ class ReportController extends Controller
 
         return $pdf->download('Laporan_Labkom_' . Carbon::now()->format('Ymd_His') . '.pdf');
     }
+
+    private function getBookingsQuery(Request $request)
+    {
+        $range = $request->get('range', 'this_week');
+        $startDate = null;
+        $endDate = null;
+
+        if ($range === 'this_week') {
+            $startDate = Carbon::now()->startOfWeek();
+            $endDate = Carbon::now()->endOfWeek();
+        } elseif ($range === 'this_month') {
+            $startDate = Carbon::now()->startOfMonth();
+            $endDate = Carbon::now()->endOfMonth();
+        } elseif ($range === 'custom') {
+            $request->validate([
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after_or_equal:start_date',
+            ]);
+            $startDate = Carbon::parse($request->start_date)->startOfDay();
+            $endDate = Carbon::parse($request->end_date)->endOfDay();
+        } else {
+            return null; // Invalid range
+        }
+
+        $query = Booking::with(['laboratory', 'businessUnit', 'subBusinessUnit'])
+            ->whereBetween('created_at', [$startDate, $endDate]);
+
+        if ($request->filled('business_unit_id')) {
+            $query->where('business_unit_id', $request->business_unit_id);
+        }
+
+        if ($request->filled('sub_business_unit_id')) {
+            $query->where('sub_business_unit_id', $request->sub_business_unit_id);
+        }
+
+        return $query;
+    }
+
+    public function downloadCsv(Request $request)
+    {
+        $query = $this->getBookingsQuery($request);
+        if (!$query) {
+            return redirect()->back()->with('error', 'Rentang waktu tidak valid.');
+        }
+        
+        $bookings = $query->orderBy('created_at', 'asc')->get();
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\BookingsExport($bookings), 'Laporan_Labkom_' . Carbon::now()->format('Ymd_His') . '.csv', \Maatwebsite\Excel\Excel::CSV);
+    }
+
+    public function downloadExcel(Request $request)
+    {
+        $query = $this->getBookingsQuery($request);
+        if (!$query) {
+            return redirect()->back()->with('error', 'Rentang waktu tidak valid.');
+        }
+        
+        $bookings = $query->orderBy('created_at', 'asc')->get();
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\BookingsExport($bookings), 'Laporan_Labkom_' . Carbon::now()->format('Ymd_His') . '.xlsx', \Maatwebsite\Excel\Excel::XLSX);
+    }
 }

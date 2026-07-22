@@ -29,7 +29,7 @@
                 <h5 class="modal-title fw-bold" id="customReportModalLabel">Download Laporan Kustom</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ route('admin.reports.pdf') }}" method="GET">
+            <form method="GET">
                 <input type="hidden" name="range" value="custom">
                 <div class="modal-body">
                     <div class="mb-3">
@@ -60,7 +60,9 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-download me-1"></i> Download PDF</button>
+                    <button type="submit" class="btn btn-danger" formaction="{{ route('admin.reports.pdf') }}"><i class="bi bi-file-earmark-pdf me-1"></i> PDF</button>
+                    <button type="submit" class="btn btn-success" formaction="{{ route('admin.reports.excel') }}"><i class="bi bi-file-earmark-excel me-1"></i> Excel</button>
+                    <button type="submit" class="btn btn-secondary" formaction="{{ route('admin.reports.csv') }}"><i class="bi bi-filetype-csv me-1"></i> CSV</button>
                 </div>
             </form>
         </div>

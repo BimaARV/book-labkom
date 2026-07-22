@@ -765,6 +765,70 @@ try {
         }
     }
 
+    /**
+     * Send a notification to the PIC when a routine schedule is changed (shortened/extended).
+     */
+    public function sendRoutineScheduleChangedNotification(Booking $booking, $newEndDate)
+    {
+        $settings = Setting::whereIn('key', ['WA_GATEWAY_URL'])->pluck('value', 'key');
+        $gatewayUrl = $this->getInternalGatewayUrl($settings['WA_GATEWAY_URL'] ?? null);
+
+        $userPhone = $booking->whatsapp;
+        if ($userPhone && $gatewayUrl) {
+            $newEndDateStr = \Carbon\Carbon::parse($newEndDate)->format('d M Y');
+            $timeStr = \Carbon\Carbon::parse($booking->start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($booking->end_time)->format('H:i');
+            $trackUrl = secure_url('/track/' . $booking->tracking_code);
+
+            $userMessage  = "Halo *{$booking->pic_name}*,\n\n";
+            $userMessage .= "Terdapat penyesuaian pada jadwal *Peminjaman Rutin* Anda oleh Admin.\n\n";
+            $userMessage .= "Kode Booking (Grup): *{$booking->tracking_code}*\n";
+            $userMessage .= "Labkom: {$booking->lab_name}\n";
+            $userMessage .= "Waktu: {$timeStr}\n";
+            $userMessage .= "Tanggal Berakhir Baru: *{$newEndDateStr}*\n\n";
+            $userMessage .= "Silakan cek status terbaru secara berkala.\n";
+            $userMessage .= "Cek Status: {$trackUrl}";
+
+            try {
+                \Illuminate\Support\Facades\Http::timeout(5)->post(rtrim($gatewayUrl, '/') . '/send', [
+                    'phone' => $userPhone,
+                    'message' => $userMessage,
+                ]);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to send WA Routine Schedule Changed to user: " . $e->getMessage());
+            }
+        }
+        
+        // You could also send an email here if required, but WhatsApp is standard for now.
+    }
+
+    /**
+     * Send a notification to the PIC as a reminder before/when booking ends.
+     */
+    public function sendBookingReminderUserNotification(Booking $booking)
+    {
+        $settings = Setting::whereIn('key', ['WA_GATEWAY_URL'])->pluck('value', 'key');
+        $gatewayUrl = $this->getInternalGatewayUrl($settings['WA_GATEWAY_URL'] ?? null);
+
+        $userPhone = $booking->whatsapp;
+        if ($userPhone && $gatewayUrl) {
+            $endTime = \Carbon\Carbon::parse($booking->end_time)->format('H:i');
+            
+            $userMessage  = "Halo *{$booking->pic_name}*,\n\n";
+            $userMessage .= "Pengingat: Waktu peminjaman Labkom Anda (*{$booking->lab_name}*) akan segera berakhir pada pukul *{$endTime}* hari ini.\n\n";
+            $userMessage .= "Mohon bersiap untuk mengakhiri sesi dan pastikan Labkom dalam keadaan bersih dan rapi.\n\n";
+            $userMessage .= "Terima kasih atas kerja samanya.";
+
+            try {
+                \Illuminate\Support\Facades\Http::timeout(5)->post(rtrim($gatewayUrl, '/') . '/send', [
+                    'phone' => $userPhone,
+                    'message' => $userMessage,
+                ]);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to send WA Booking Reminder to user: " . $e->getMessage());
+            }
+        }
+    }
+
     public function sendAccountDeletedEmail(string $email, string $name)
     {
         $settings = \App\Models\Setting::pluck('value', 'key');
