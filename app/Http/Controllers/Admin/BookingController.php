@@ -283,6 +283,22 @@ class BookingController extends Controller
             }
         }
 
+        // Apply time & details changes to ALL other pending/accepted bookings in the same group
+        if ($booking->group_id) {
+            Booking::where('group_id', $booking->group_id)
+                ->where('id', '!=', $booking->id)
+                ->whereIn('status', ['pending', 'accepted'])
+                ->update([
+                    'start_time' => $request->start_time,
+                    'end_time' => $request->end_time,
+                    'laboratory_id' => $request->laboratory_id === 'all' ? null : $request->laboratory_id,
+                    'is_all_labs' => $request->laboratory_id === 'all',
+                    'business_unit_id' => $request->business_unit_id,
+                    'sub_business_unit_id' => $request->sub_business_unit_id,
+                    'purpose' => $request->purpose,
+                ]);
+        }
+
         // Handle recurring end date change
         if ($booking->group_id && $request->filled('recurring_end_date')) {
             $currentMaxDate = Booking::where('group_id', $booking->group_id)->max('date');
@@ -304,7 +320,7 @@ class BookingController extends Controller
                         'ip_address' => $request->ip()
                     ]);
                 } else {
-                    // Extend: create new bookings after current max date
+                    // Extend: create new bookings
                     // Detect interval from existing group bookings
                     $groupDates = Booking::where('group_id', $booking->group_id)
                         ->orderBy('date', 'asc')
@@ -313,35 +329,48 @@ class BookingController extends Controller
 
                     $interval = 'weekly'; // default
                     if ($groupDates->count() >= 2) {
-                        $diff = $groupDates[0]->diffInDays($groupDates[1]);
-                        $interval = $diff <= 1 ? 'daily' : 'weekly';
+                        $diffs = [];
+                        for($i=1; $i<$groupDates->count(); $i++) {
+                            $diffs[] = $groupDates[$i-1]->diffInDays($groupDates[$i]);
+                        }
+                        $counts = array_count_values($diffs);
+                        arsort($counts);
+                        $mostCommon = array_key_first($counts);
+                        $interval = $mostCommon <= 1 ? 'daily' : 'weekly';
                     }
 
-                    $currentDate = $currentMax->copy();
+                    // Start generating from the edited booking's date to maintain sequence
+                    $currentDate = \Carbon\Carbon::parse($booking->date)->copy();
                     $interval === 'daily' ? $currentDate->addDay() : $currentDate->addWeek();
 
                     $newBookingsCount = 0;
                     while ($currentDate->lte($newEndDate)) {
-                        $trackingCode = 'cbt-' . $currentDate->format('Ymd') . '-' . strtoupper(\Illuminate\Support\Str::random(4));
+                        $exists = Booking::where('group_id', $booking->group_id)
+                                         ->where('date', $currentDate->format('Y-m-d'))
+                                         ->exists();
+                                         
+                        if (!$exists) {
+                            $trackingCode = 'cbt-' . $currentDate->format('Ymd') . '-' . strtoupper(\Illuminate\Support\Str::random(4));
 
-                        Booking::create([
-                            'tracking_code' => $trackingCode,
-                            'group_id' => $booking->group_id,
-                            'pic_name' => $booking->pic_name,
-                            'laboratory_id' => $booking->laboratory_id,
-                            'is_all_labs' => $booking->is_all_labs,
-                            'business_unit_id' => $booking->business_unit_id,
-                            'sub_business_unit_id' => $booking->sub_business_unit_id,
-                            'date' => $currentDate->format('Y-m-d'),
-                            'start_time' => $booking->start_time,
-                            'end_time' => $booking->end_time,
-                            'whatsapp' => $booking->whatsapp,
-                            'email' => $booking->email,
-                            'purpose' => $booking->purpose,
-                            'status' => 'pending',
-                        ]);
+                            Booking::create([
+                                'tracking_code' => $trackingCode,
+                                'group_id' => $booking->group_id,
+                                'pic_name' => $booking->pic_name,
+                                'laboratory_id' => $booking->laboratory_id,
+                                'is_all_labs' => $booking->is_all_labs,
+                                'business_unit_id' => $booking->business_unit_id,
+                                'sub_business_unit_id' => $booking->sub_business_unit_id,
+                                'date' => $currentDate->format('Y-m-d'),
+                                'start_time' => $booking->start_time,
+                                'end_time' => $booking->end_time,
+                                'whatsapp' => $booking->whatsapp,
+                                'email' => $booking->email,
+                                'purpose' => $booking->purpose,
+                                'status' => 'pending',
+                            ]);
 
-                        $newBookingsCount++;
+                            $newBookingsCount++;
+                        }
                         $interval === 'daily' ? $currentDate->addDay() : $currentDate->addWeek();
                     }
 
