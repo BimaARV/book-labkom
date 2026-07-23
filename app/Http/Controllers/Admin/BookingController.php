@@ -258,8 +258,8 @@ class BookingController extends Controller
                     $oldValue = \App\Models\SubBusinessUnit::find($oldValue)->name ?? '-';
                     $newValue = \App\Models\SubBusinessUnit::find($newValue)->name ?? '-';
                 } elseif ($key === 'date') {
-                    $oldValue = \Carbon\Carbon::parse($oldValue)->format('Y-m-d');
-                    $newValue = \Carbon\Carbon::parse($newValue)->format('Y-m-d');
+                    $oldValue = \Carbon\Carbon::parse($oldValue)->format('d M Y');
+                    $newValue = \Carbon\Carbon::parse($newValue)->format('d M Y');
                 } elseif ($key === 'start_time' || $key === 'end_time') {
                     $oldValue = \Carbon\Carbon::parse($oldValue)->format('H:i');
                     $newValue = \Carbon\Carbon::parse($newValue)->format('H:i');
@@ -275,12 +275,6 @@ class BookingController extends Controller
             }
 
             $booking->save();
-
-            if (!empty($changes)) {
-                $notificationService = new NotificationService();
-                $notifyPic = $request->has('notify_pic');
-                $notificationService->sendBookingEditedNotification($booking, Auth::user(), $changes, $notifyPic);
-            }
         }
 
         // Apply time & details changes to ALL other pending/accepted bookings in the same group
@@ -339,6 +333,12 @@ class BookingController extends Controller
                         $interval = $mostCommon <= 1 ? 'daily' : 'weekly';
                     }
 
+                    // Fallback for when there's only 1 booking left or default is weekly but they extended by < 7 days
+                    $daysUntilEnd = \Carbon\Carbon::parse($booking->date)->diffInDays($newEndDate);
+                    if ($interval === 'weekly' && $daysUntilEnd > 0 && $daysUntilEnd < 7) {
+                        $interval = 'daily';
+                    }
+
                     // Start generating from the edited booking's date to maintain sequence
                     $currentDate = \Carbon\Carbon::parse($booking->date)->copy();
                     $interval === 'daily' ? $currentDate->addDay() : $currentDate->addWeek();
@@ -381,14 +381,18 @@ class BookingController extends Controller
                         'ip_address' => $request->ip()
                     ]);
                 }
-                // Send notification to user about the change
-                if (isset($notificationService)) {
-                    $notificationService->sendRoutineScheduleChangedNotification($booking, $newEndDate->format('Y-m-d'));
-                } else {
-                    $notificationService = new \App\Services\NotificationService();
-                    $notificationService->sendRoutineScheduleChangedNotification($booking, $newEndDate->format('Y-m-d'));
-                }
+                $notificationService = $notificationService ?? new \App\Services\NotificationService();
+                $notificationService->sendRoutineScheduleChangedNotification($booking, $newEndDate->format('Y-m-d'));
             }
+
+            // Add recurring end date change to $changes for group notification
+            $changes[] = "Tanggal Berakhir Rutin: " . \Carbon\Carbon::parse($currentMaxDate)->format('d M Y') . " -> " . $newEndDate->format('d M Y');
+        }
+
+        if (!empty($changes)) {
+            $notificationService = $notificationService ?? new NotificationService();
+            $notifyPic = $request->has('notify_pic');
+            $notificationService->sendBookingEditedNotification($booking, Auth::user(), $changes, $notifyPic);
         }
 
         return redirect()->route('admin.bookings.index')->with('success', 'Data booking berhasil diperbarui.');

@@ -469,7 +469,7 @@ try {
             $recurringEnd = \App\Models\Booking::where('group_id', $booking->group_id)
                 ->whereNotIn('status', ['cancelled', 'rejected'])
                 ->max('date');
-            if ($recurringEnd && $recurringEnd != $booking->date) {
+            if ($recurringEnd) {
                 $recurringInfo = " (Rutin s/d " . \Carbon\Carbon::parse($recurringEnd)->format('d M Y') . ")";
             }
         }
@@ -514,6 +514,17 @@ try {
         if ($notifyPic) {
             // WA to PIC
             if ($gatewayUrl && $booking->whatsapp) {
+                // Re-fetch recurring end for PIC message (same as group)
+                $recurringInfoPic = '';
+                if ($booking->group_id) {
+                    $recurringEndPic = \App\Models\Booking::where('group_id', $booking->group_id)
+                        ->whereNotIn('status', ['cancelled', 'rejected'])
+                        ->max('date');
+                    if ($recurringEndPic) {
+                        $recurringInfoPic = " (Rutin s/d " . \Carbon\Carbon::parse($recurringEndPic)->format('d M Y') . ")";
+                    }
+                }
+
                 $messagePic = "Halo *{$booking->pic_name}*,\n\n";
                 $messagePic .= "Terdapat perubahan pada detail peminjaman Labkom Anda yang diproses oleh tim IT Infrastructure. Berikut adalah data yang diperbarui:\n\n";
                 $messagePic .= "- " . implode("\n- ", $changes) . "\n\n";
@@ -521,7 +532,7 @@ try {
                 $messagePic .= "Kode Booking: {$booking->tracking_code}\n";
                 $messagePic .= "Unit Bisnis: {$unitBisnis}\n";
                 $messagePic .= "Labkom: {$labName}\n";
-                $messagePic .= "Tanggal: {$date}{$recurringInfo}\n";
+                $messagePic .= "Tanggal: {$date}{$recurringInfoPic}\n";
                 $messagePic .= "Waktu: {$time}\n";
                 $messagePic .= "Keperluan: {$booking->purpose}\n\n";
                 
@@ -781,7 +792,7 @@ try {
 
             $userMessage  = "Halo *{$booking->pic_name}*,\n\n";
             $userMessage .= "Terdapat penyesuaian pada jadwal *Peminjaman Rutin* Anda oleh Admin.\n\n";
-            $userMessage .= "Kode Booking (Grup): *{$booking->tracking_code}*\n";
+            $userMessage .= "Kode Booking: *{$booking->tracking_code}*\n";
             $userMessage .= "Labkom: {$booking->lab_name}\n";
             $userMessage .= "Waktu: {$timeStr}\n";
             $userMessage .= "Tanggal Berakhir Baru: *{$newEndDateStr}*\n\n";
