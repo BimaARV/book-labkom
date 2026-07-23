@@ -17,14 +17,9 @@ class NotificationService
      */
     public function sendNewBookingNotification(Booking $booking, $totalSessions = 1, $frequency = null)
     {
-        $settings = Setting::whereIn('key', ['WA_GATEWAY_URL', 'WA_GROUP_ID'])->pluck('value', 'key');
+        $settings = Setting::pluck('value', 'key');
         $gatewayUrl = $this->getInternalGatewayUrl($settings['WA_GATEWAY_URL'] ?? null);
         $groupId = $settings['WA_GROUP_ID'] ?? null;
-
-        if (!$gatewayUrl || !$groupId) {
-            Log::info("WhatsApp Gateway or Group ID is not configured. Skipping new booking notification.");
-            return;
-        }
 
         $labName = $booking->lab_name;
         $unitName = optional($booking->businessUnit)->name;
@@ -36,80 +31,85 @@ class NotificationService
 
         $trackUrl = secure_url('/track/' . $booking->tracking_code);
 
-        $message = "INFO: PEMINJAMAN BARU\n\n";
-        $message .= "Ada permintaan peminjaman Labkom baru:\n\n";
-        $message .= "Kode Booking: {$booking->tracking_code}\n";
-        $message .= "PIC: {$booking->pic_name} ({$unitBisnis})\n";
-        $message .= "Labkom: {$labName}\n";
-        $message .= "Tanggal: {$date}\n";
-        $message .= "Waktu: {$time}\n";
-        $message .= "WhatsApp: {$booking->whatsapp}\n";
-        $message .= "Email: {$booking->email}\n";
-        $message .= "Keperluan: {$booking->purpose}\n";
-        
-        if ($totalSessions > 1 && $frequency) {
-            $lastBooking = \App\Models\Booking::where('group_id', $booking->group_id)->orderBy('date', 'desc')->first();
-            $freqLabel = $frequency === 'daily' ? 'Harian' : 'Setiap Minggu';
-            $sesiLabel = $frequency === 'daily' ? "{$totalSessions} Hari" : "{$totalSessions} Minggu";
+        // 1. WhatsApp Notification to Group
+        if ($gatewayUrl && $groupId) {
+            $message = "INFO: PEMINJAMAN BARU\n\n";
+            $message .= "Ada permintaan peminjaman Labkom baru:\n\n";
+            $message .= "Kode Booking: {$booking->tracking_code}\n";
+            $message .= "PIC: {$booking->pic_name} ({$unitBisnis})\n";
+            $message .= "Labkom: {$labName}\n";
+            $message .= "Tanggal: {$date}\n";
+            $message .= "Waktu: {$time}\n";
+            $message .= "WhatsApp: {$booking->whatsapp}\n";
+            $message .= "Email: {$booking->email}\n";
+            $message .= "Keperluan: {$booking->purpose}\n";
             
-            if ($lastBooking && $lastBooking->date != $booking->date) {
-                $endDateStr = \Carbon\Carbon::parse($lastBooking->date)->format('d M Y');
-                $message .= "Pemesanan Rutin: Ya\nFrekuensi: {$freqLabel}\nPeriode: {$date} - {$endDateStr}\nTotal Sesi: {$sesiLabel}\n\n";
+            if ($totalSessions > 1 && $frequency) {
+                $lastBooking = \App\Models\Booking::where('group_id', $booking->group_id)->orderBy('date', 'desc')->first();
+                $freqLabel = $frequency === 'daily' ? 'Harian' : 'Setiap Minggu';
+                $sesiLabel = $frequency === 'daily' ? "{$totalSessions} Hari" : "{$totalSessions} Minggu";
+                
+                if ($lastBooking && $lastBooking->date != $booking->date) {
+                    $endDateStr = \Carbon\Carbon::parse($lastBooking->date)->format('d M Y');
+                    $message .= "Pemesanan Rutin: Ya\nFrekuensi: {$freqLabel}\nPeriode: {$date} - {$endDateStr}\nTotal Sesi: {$sesiLabel}\n\n";
+                } else {
+                    $message .= "Pemesanan Rutin: Ya\nFrekuensi: {$freqLabel}\nTotal Sesi: {$sesiLabel}\n\n";
+                }
             } else {
-                $message .= "Pemesanan Rutin: Ya\nFrekuensi: {$freqLabel}\nTotal Sesi: {$sesiLabel}\n\n";
+                $message .= "\n";
+            }
+
+            $message .= "Cek Status: {$trackUrl}\n\n";
+            $message .= "Mohon tim Infrastructure segera meninjau di Dashboard.";
+
+            try {
+                Http::timeout(5)->post(rtrim($gatewayUrl, '/') . '/send', [
+                    'phone' => $groupId,
+                    'message' => $message
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Failed to send WA New Booking Notification: " . $e->getMessage());
             }
         } else {
-            $message .= "\n";
+            Log::info("WhatsApp Gateway or Group ID is not configured. Skipping WA group notification for new booking.");
         }
 
-        $message .= "Cek Status: {$trackUrl}\n\n";
-        $message .= "Mohon tim Infrastructure segera meninjau di Dashboard.";
-
-        try {
-            Http::timeout(5)->post(rtrim($gatewayUrl, '/') . '/send', [
-                'phone' => $groupId,
-                'message' => $message
-            ]);
-        } catch (\Exception $e) {
-            Log::error("Failed to send WA New Booking Notification: " . $e->getMessage());
-        }
-
-        /**
-     * Kirim WA ke user (pemohon)
-     */
+        // 2. WhatsApp Notification to PIC/user
         $userPhone = $booking->whatsapp;
-if ($userPhone && $gatewayUrl) {
-    $date = \Carbon\Carbon::parse($booking->date)->format('d M Y');
-    $time = \Carbon\Carbon::parse($booking->start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($booking->end_time)->format('H:i');
-    $trackUrl = secure_url('/track/' . $booking->tracking_code);
+        if ($userPhone && $gatewayUrl) {
+            $userMessage  = "Halo *{$booking->pic_name}*,\n\n";
+            $userMessage .= "Permintaan peminjaman Labkom Anda telah kami terima dan sedang menunggu persetujuan.\n\n";
+            $userMessage .= "Kode Booking: *{$booking->tracking_code}*\n";
+            $userMessage .= "Labkom: {$booking->lab_name}\n";
+            $userMessage .= "Tanggal: {$date}\n";
+            $userMessage .= "Waktu: {$time}\n\n";
+            $userMessage .= "Simpan kode booking Anda untuk memantau status atau mengajukan perubahan.\n";
+            $userMessage .= "Cek Status: {$trackUrl}";
 
-    $userMessage  = "Halo *{$booking->pic_name}*,\n\n";
-    $userMessage .= "Permintaan peminjaman Labkom Anda telah kami terima dan sedang menunggu persetujuan.\n\n";
-    $userMessage .= "Kode Booking: *{$booking->tracking_code}*\n";
-    $userMessage .= "Labkom: {$booking->lab_name}\n";
-    $userMessage .= "Tanggal: {$date}\n";
-    $userMessage .= "Waktu: {$time}\n\n";
-    $userMessage .= "Simpan kode booking Anda untuk memantau status atau mengajukan perubahan.\n";
-    $userMessage .= "Cek Status: {$trackUrl}";
+            try {
+                Http::timeout(5)->post(rtrim($gatewayUrl, '/') . '/send', [
+                    'phone' => $userPhone,
+                    'message' => $userMessage,
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Failed to send WA New Booking to user: " . $e->getMessage());
+            }
+        }
 
-    try {
-        Http::timeout(5)->post(rtrim($gatewayUrl, '/') . '/send', [
-            'phone' => $userPhone,
-            'message' => $userMessage,
-        ]);
-    } catch (\Exception $e) {
-        Log::error("Failed to send WA New Booking to user: " . $e->getMessage());
+        // 3. Email Notification to user
+        $this->configureMail($settings);
+        if (!empty($settings['MAIL_HOST'])) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($booking->email)
+                    ->send(new \App\Mail\BookingReceivedMail($booking, $totalSessions, $frequency));
+            } catch (\Exception $e) {
+                Log::error("Failed to send email New Booking to user: " . $e->getMessage());
+            }
+        } else {
+            Log::info("SMTP Configuration is incomplete. Skipping email notification for new booking.");
+        }
     }
-}
 
-// Kirim email ke user
-try {
-    \Illuminate\Support\Facades\Mail::to($booking->email)
-        ->send(new \App\Mail\BookingReceivedMail($booking, $totalSessions, $frequency));
-} catch (\Exception $e) {
-    Log::error("Failed to send email New Booking to user: " . $e->getMessage());
-}
-    }
 
     
 
