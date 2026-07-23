@@ -13,8 +13,8 @@
             <i class="bi bi-file-earmark-pdf me-1"></i> Download Laporan
         </button>
         <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="downloadReportBtn">
-            <li><a class="dropdown-item py-2" href="{{ route('admin.reports.pdf', ['range' => 'this_week']) }}"><i class="bi bi-calendar-week me-2 text-primary"></i> Minggu Ini</a></li>
-            <li><a class="dropdown-item py-2" href="{{ route('admin.reports.pdf', ['range' => 'this_month']) }}"><i class="bi bi-calendar-month me-2 text-success"></i> Bulan Ini</a></li>
+            <li><button class="dropdown-item py-2" type="button" data-bs-toggle="modal" data-bs-target="#weeklyReportModal"><i class="bi bi-calendar-week me-2 text-primary"></i> Minggu Ini</button></li>
+            <li><button class="dropdown-item py-2" type="button" data-bs-toggle="modal" data-bs-target="#monthlyReportModal"><i class="bi bi-calendar-month me-2 text-success"></i> Bulan Ini</button></li>
             <li><hr class="dropdown-divider"></li>
             <li><button class="dropdown-item py-2" type="button" data-bs-toggle="modal" data-bs-target="#customReportModal"><i class="bi bi-calendar-range me-2 text-warning"></i> Kustom Tanggal...</button></li>
         </ul>
@@ -65,6 +65,64 @@
                     <button type="submit" class="btn btn-secondary" formaction="{{ route('admin.reports.csv') }}"><i class="bi bi-filetype-csv me-1"></i> CSV</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Laporan Mingguan -->
+<div class="modal fade" id="weeklyReportModal" tabindex="-1" aria-labelledby="weeklyReportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="weeklyReportModalLabel"><i class="bi bi-calendar-week me-2 text-primary"></i>Download Laporan Minggu Ini</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">Pilih format file untuk laporan minggu ini:</p>
+                <div class="d-grid gap-2">
+                    <a href="{{ route('admin.reports.pdf', ['range' => 'this_week']) }}" class="btn btn-danger btn-lg">
+                        <i class="bi bi-file-earmark-pdf me-2"></i>Download PDF
+                    </a>
+                    <a href="{{ route('admin.reports.excel', ['range' => 'this_week']) }}" class="btn btn-success btn-lg">
+                        <i class="bi bi-file-earmark-excel me-2"></i>Download Excel (.xlsx)
+                    </a>
+                    <a href="{{ route('admin.reports.csv', ['range' => 'this_week']) }}" class="btn btn-secondary btn-lg">
+                        <i class="bi bi-filetype-csv me-2"></i>Download CSV
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Laporan Bulanan -->
+<div class="modal fade" id="monthlyReportModal" tabindex="-1" aria-labelledby="monthlyReportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="monthlyReportModalLabel"><i class="bi bi-calendar-month me-2 text-success"></i>Download Laporan Bulan Ini</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">Pilih format file untuk laporan bulan ini:</p>
+                <div class="d-grid gap-2">
+                    <a href="{{ route('admin.reports.pdf', ['range' => 'this_month']) }}" class="btn btn-danger btn-lg">
+                        <i class="bi bi-file-earmark-pdf me-2"></i>Download PDF
+                    </a>
+                    <a href="{{ route('admin.reports.excel', ['range' => 'this_month']) }}" class="btn btn-success btn-lg">
+                        <i class="bi bi-file-earmark-excel me-2"></i>Download Excel (.xlsx)
+                    </a>
+                    <a href="{{ route('admin.reports.csv', ['range' => 'this_month']) }}" class="btn btn-secondary btn-lg">
+                        <i class="bi bi-filetype-csv me-2"></i>Download CSV
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Tutup</button>
+            </div>
         </div>
     </div>
 </div>
