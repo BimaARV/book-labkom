@@ -432,7 +432,7 @@ class NotificationService
         // 2. Email Notification
         $this->configureMail($settings);
 
-        if ($settings->has('MAIL_HOST') && $settings->has('MAIL_USERNAME')) {
+        if (!empty($settings['MAIL_HOST']) && !empty($settings['MAIL_USERNAME'])) {
             try {
                 $mail = Mail::to($booking->email);
                 
