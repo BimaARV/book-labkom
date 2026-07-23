@@ -331,7 +331,7 @@ class BookingController extends Controller
                     if ($groupDates->count() >= 2) {
                         $diffs = [];
                         for($i=1; $i<$groupDates->count(); $i++) {
-                            $diffs[] = $groupDates[$i-1]->diffInDays($groupDates[$i]);
+                            $diffs[] = (int) $groupDates[$i-1]->diffInDays($groupDates[$i]);
                         }
                         $counts = array_count_values($diffs);
                         arsort($counts);
