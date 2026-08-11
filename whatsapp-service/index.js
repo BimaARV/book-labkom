@@ -3,7 +3,7 @@ const cors = require('cors');
 const qrcode = require('qrcode');
 const pino = require('pino');
 const fs = require('fs');
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers } = require('@whiskeysockets/baileys');
 
 const app = express();
 app.use(cors());
@@ -21,7 +21,8 @@ async function connectToWhatsApp() {
         sock = makeWASocket({
             auth: state,
             printQRInTerminal: true,
-            logger: pino({ level: 'silent' })
+            logger: pino({ level: 'silent' }),
+            browser: Browsers.macOS('Desktop')
         });
 
     sock.ev.on('connection.update', async (update) => {
