@@ -45,18 +45,22 @@ async function connectToWhatsApp() {
             connectionStatus = 'disconnected';
             currentQR = null;
             sock = null;
+
+            // Error 405 & 428 = stale/corrupt session, treat same as loggedOut
+            const isStaleSession = statusCode === 405 || statusCode === 428;
             
-            if (shouldReconnect) {
-                setTimeout(() => connectToWhatsApp(), 2000);
-            } else {
-                console.log('Logged out. Clearing session data...');
+            if (isStaleSession || !shouldReconnect) {
+                console.log('Stale session or logged out. Clearing session data...');
                 try {
                     const dir = 'baileys_auth_info';
                     if (fs.existsSync(dir)) {
                         fs.readdirSync(dir).forEach(f => fs.rmSync(`${dir}/${f}`, { recursive: true, force: true }));
                     }
+                    console.log('Session data cleared successfully. Reconnecting fresh...');
                 } catch(e) { console.error('Gagal menghapus auth:', e); }
                 // Start fresh for new QR
+                setTimeout(() => connectToWhatsApp(), 3000);
+            } else if (shouldReconnect) {
                 setTimeout(() => connectToWhatsApp(), 2000);
             }
         } else if (connection === 'open') {
