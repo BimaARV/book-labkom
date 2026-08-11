@@ -3,7 +3,7 @@ const cors = require('cors');
 const qrcode = require('qrcode');
 const pino = require('pino');
 const fs = require('fs');
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
 
 const app = express();
 app.use(cors());
@@ -17,8 +17,10 @@ let connectionStatus = 'disconnected';
 async function connectToWhatsApp() {
     try {
         const { state, saveCreds } = await useMultiFileAuthState('baileys_auth_info');
+        const { version } = await fetchLatestBaileysVersion();
         
         sock = makeWASocket({
+            version,
             auth: state,
             printQRInTerminal: true,
             logger: pino({ level: 'silent' }),
