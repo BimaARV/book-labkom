@@ -13,79 +13,134 @@ const PORT = 3000;
 let sock = null;
 let currentQR = null;
 let connectionStatus = 'disconnected';
+let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 10;
+
+function clearAuthData() {
+    try {
+        const dir = 'baileys_auth_info';
+        if (fs.existsSync(dir)) {
+            fs.readdirSync(dir).forEach(f => fs.rmSync(`${dir}/${f}`, { recursive: true, force: true }));
+        }
+        console.log('[AUTH] Session data cleared successfully.');
+    } catch (e) {
+        console.error('[AUTH] Failed to clear session data:', e.message);
+    }
+}
+
+function getReconnectDelay() {
+    // Exponential backoff: 3s, 6s, 12s, 24s, 48s, max 60s
+    const delay = Math.min(3000 * Math.pow(2, reconnectAttempts), 60000);
+    return delay;
+}
 
 async function connectToWhatsApp() {
+    if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+        console.log(`[WA] Max reconnect attempts (${MAX_RECONNECT_ATTEMPTS}) reached. Stopping.`);
+        console.log('[WA] Use POST /disconnect or restart the service to try again.');
+        connectionStatus = 'failed';
+        return;
+    }
+
     try {
-        const { state, saveCreds } = await useMultiFileAuthState('baileys_auth_info');
-        const { version } = await fetchLatestBaileysVersion();
+        console.log(`[WA] Connecting... (attempt ${reconnectAttempts + 1}/${MAX_RECONNECT_ATTEMPTS})`);
         
-        sock = makeWASocket({
-            version,
+        const { state, saveCreds } = await useMultiFileAuthState('baileys_auth_info');
+        
+        let version;
+        try {
+            const result = await fetchLatestBaileysVersion();
+            version = result.version;
+            console.log('[WA] Using WhatsApp Web version:', version.join('.'));
+        } catch (e) {
+            console.log('[WA] Could not fetch latest version, using default');
+            version = undefined;
+        }
+
+        const socketOptions = {
             auth: state,
             printQRInTerminal: true,
             logger: pino({ level: 'silent' }),
-            browser: Browsers.macOS('Desktop')
+            browser: Browsers.macOS('Desktop'),
+            connectTimeoutMs: 60000,
+            qrTimeout: 60000,
+        };
+        
+        if (version) {
+            socketOptions.version = version;
+        }
+
+        sock = makeWASocket(socketOptions);
+
+        sock.ev.on('connection.update', async (update) => {
+            const { connection, lastDisconnect, qr } = update;
+
+            if (qr) {
+                currentQR = await qrcode.toDataURL(qr);
+                connectionStatus = 'waiting_qr';
+                reconnectAttempts = 0; // Reset attempts when QR is generated
+                console.log('[WA] QR Code generated successfully! Ready to scan.');
+            }
+
+            if (connection === 'close') {
+                const statusCode = lastDisconnect?.error?.output?.statusCode;
+                const errorMessage = lastDisconnect?.error?.message || 'Unknown';
+
+                console.log(`[WA] Connection closed. Code: ${statusCode}, Reason: ${errorMessage}`);
+
+                connectionStatus = 'disconnected';
+                currentQR = null;
+                sock = null;
+
+                if (statusCode === DisconnectReason.loggedOut) {
+                    // User explicitly logged out - clear and restart
+                    console.log('[WA] Logged out by user. Clearing session...');
+                    clearAuthData();
+                    reconnectAttempts = 0;
+                    setTimeout(() => connectToWhatsApp(), 3000);
+                } else if (statusCode === 428 || statusCode === 405 || statusCode === 440) {
+                    // 428 = connectionClosed, 405 = method not allowed, 440 = connectionReplaced
+                    // These indicate session/protocol issues - clear auth and retry with backoff
+                    console.log('[WA] Session rejected by WhatsApp. Clearing auth data...');
+                    clearAuthData();
+                    reconnectAttempts++;
+                    const delay = getReconnectDelay();
+                    console.log(`[WA] Will retry in ${delay / 1000}s (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
+                    setTimeout(() => connectToWhatsApp(), delay);
+                } else {
+                    // Other errors (timeout, network, etc.) - just reconnect
+                    reconnectAttempts++;
+                    const delay = getReconnectDelay();
+                    console.log(`[WA] Will retry in ${delay / 1000}s (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
+                    setTimeout(() => connectToWhatsApp(), delay);
+                }
+            } else if (connection === 'open') {
+                console.log('[WA] Connected successfully!');
+                connectionStatus = 'connected';
+                currentQR = null;
+                reconnectAttempts = 0;
+            }
         });
 
-    sock.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect, qr } = update;
-        
-        if (qr) {
-            // Generate base64 QR code to send to the UI
-            currentQR = await qrcode.toDataURL(qr);
-            connectionStatus = 'waiting_qr';
-        }
+        sock.ev.on('creds.update', saveCreds);
 
-        if (connection === 'close') {
-            const statusCode = lastDisconnect?.error?.output?.statusCode;
-            const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-            
-            console.log('Connection closed. Code:', statusCode, 'Should reconnect:', shouldReconnect);
-            
-            connectionStatus = 'disconnected';
-            currentQR = null;
-            sock = null;
+        sock.ev.on('messages.upsert', async m => {
+            const msg = m.messages[0];
+            if (!msg.message) return;
 
-            // Error 405 & 428 = stale/corrupt session, treat same as loggedOut
-            const isStaleSession = statusCode === 405 || statusCode === 428;
-            
-            if (isStaleSession || !shouldReconnect) {
-                console.log('Stale session or logged out. Clearing session data...');
-                try {
-                    const dir = 'baileys_auth_info';
-                    if (fs.existsSync(dir)) {
-                        fs.readdirSync(dir).forEach(f => fs.rmSync(`${dir}/${f}`, { recursive: true, force: true }));
-                    }
-                    console.log('Session data cleared successfully. Reconnecting fresh...');
-                } catch(e) { console.error('Gagal menghapus auth:', e); }
-                // Start fresh for new QR
-                setTimeout(() => connectToWhatsApp(), 3000);
-            } else if (shouldReconnect) {
-                setTimeout(() => connectToWhatsApp(), 2000);
+            const text = msg.message.conversation || msg.message.extendedTextMessage?.text;
+
+            if (text === '!id') {
+                const chatId = msg.key.remoteJid;
+                await sock.sendMessage(chatId, { text: `Group ID ini adalah:\n\n*${chatId}*` }, { quoted: msg });
             }
-        } else if (connection === 'open') {
-            console.log('Opened connection');
-            connectionStatus = 'connected';
-            currentQR = null;
-        }
-    });
-
-    sock.ev.on('creds.update', saveCreds);
-
-    sock.ev.on('messages.upsert', async m => {
-        const msg = m.messages[0];
-        if (!msg.message) return;
-
-        const text = msg.message.conversation || msg.message.extendedTextMessage?.text;
-        
-        if (text === '!id') {
-            const chatId = msg.key.remoteJid;
-            await sock.sendMessage(chatId, { text: `Group ID ini adalah:\n\n*${chatId}*` }, { quoted: msg });
-        }
-    });
+        });
     } catch (err) {
-        console.error('Error starting WhatsApp:', err);
-        setTimeout(() => connectToWhatsApp(), 5000);
+        console.error('[WA] Error starting WhatsApp:', err.message);
+        reconnectAttempts++;
+        const delay = getReconnectDelay();
+        console.log(`[WA] Will retry in ${delay / 1000}s (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
+        setTimeout(() => connectToWhatsApp(), delay);
     }
 }
 
@@ -99,21 +154,19 @@ app.get('/qr', (req, res) => {
     if (currentQR) {
         return res.json({ status: 'waiting_qr', qr: currentQR });
     }
-    if (connectionStatus === 'disconnected') {
-        // Jangan panggil connectToWhatsApp() lagi di sini jika sudah dipanggil di awal 
-        // atau serahkan pada retry logic
-        connectionStatus = 'loading';
+    if (connectionStatus === 'failed') {
+        return res.json({ status: 'failed', message: 'Gagal terhubung setelah beberapa percobaan. Silakan restart service.' });
     }
     return res.json({ status: 'loading', message: 'Sedang membuat QR Code, silakan coba beberapa detik lagi' });
 });
 
 app.get('/status', (req, res) => {
-    res.json({ status: connectionStatus });
+    res.json({ status: connectionStatus, reconnectAttempts });
 });
 
 app.post('/send', async (req, res) => {
     const { phone, message } = req.body;
-    
+
     if (connectionStatus !== 'connected' || !sock) {
         return res.status(500).json({ error: 'WhatsApp Gateway belum terhubung. Silakan scan QR code terlebih dahulu di panel Admin.' });
     }
@@ -122,7 +175,6 @@ app.post('/send', async (req, res) => {
     }
 
     try {
-        // Format phone number to WhatsApp format
         let formattedPhone = phone;
         if (!formattedPhone.endsWith('@g.us')) {
             formattedPhone = formattedPhone.replace(/[^0-9]/g, '');
@@ -147,27 +199,35 @@ app.post('/disconnect', async (req, res) => {
         if (sock) {
             await sock.logout();
         }
-    } catch(e) {
-        console.error('Error logout:', e);
+    } catch (e) {
+        console.error('[WA] Error during logout:', e.message);
     }
-    
+
     connectionStatus = 'disconnected';
     currentQR = null;
     sock = null;
-    
-    try {
-        const dir = 'baileys_auth_info';
-        if (fs.existsSync(dir)) {
-            fs.readdirSync(dir).forEach(f => fs.rmSync(`${dir}/${f}`, { recursive: true, force: true }));
-        }
-    } catch(e) { console.error('Gagal menghapus auth:', e); }
-    
+    reconnectAttempts = 0;
+
+    clearAuthData();
+
     // Connect again to generate new QR for future scan
-    setTimeout(() => connectToWhatsApp(), 2000);
-    
+    setTimeout(() => connectToWhatsApp(), 3000);
+
     res.json({ success: true, message: 'Berhasil memutuskan koneksi' });
 });
 
+// Force retry endpoint - useful when max attempts reached
+app.post('/retry', (req, res) => {
+    console.log('[WA] Manual retry triggered via API');
+    connectionStatus = 'disconnected';
+    currentQR = null;
+    sock = null;
+    reconnectAttempts = 0;
+    clearAuthData();
+    setTimeout(() => connectToWhatsApp(), 1000);
+    res.json({ success: true, message: 'Retry initiated' });
+});
+
 app.listen(PORT, () => {
-    console.log(`WhatsApp Baileys Service berjalan di port ${PORT}`);
+    console.log(`[WA] WhatsApp Baileys Service berjalan di port ${PORT}`);
 });
