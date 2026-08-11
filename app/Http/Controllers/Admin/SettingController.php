@@ -23,7 +23,7 @@ class SettingController extends Controller
 
     public function updateSmtp(Request $request)
     {
-        $keys = ['MAIL_MAILER', 'MAIL_HOST', 'MAIL_PORT', 'MAIL_USERNAME', 'MAIL_FROM_ADDRESS', 'MAIL_FROM_NAME', 'MAIL_CC_ADDRESSES'];
+        $keys = ['MAIL_MAILER', 'MAIL_HOST', 'MAIL_PORT', 'MAIL_USERNAME', 'MAIL_ENCRYPTION', 'MAIL_FROM_ADDRESS', 'MAIL_FROM_NAME', 'MAIL_CC_ADDRESSES'];
         
         foreach ($keys as $key) {
             if ($request->has($key)) {

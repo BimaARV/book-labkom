@@ -22,12 +22,20 @@
                 <input type="text" name="MAIL_PORT" class="form-control" value="{{ $settings['MAIL_PORT'] ?? '465' }}" required>
             </div>
             <div class="mb-3">
+                <label class="form-label">Mail Encryption</label>
+                <select name="MAIL_ENCRYPTION" class="form-select">
+                    <option value="tls" {{ ($settings['MAIL_ENCRYPTION'] ?? 'tls') == 'tls' ? 'selected' : '' }}>TLS</option>
+                    <option value="ssl" {{ ($settings['MAIL_ENCRYPTION'] ?? '') == 'ssl' ? 'selected' : '' }}>SSL</option>
+                    <option value="" {{ ($settings['MAIL_ENCRYPTION'] ?? '') == '' ? 'selected' : '' }}>None</option>
+                </select>
+            </div>
+            <div class="mb-3">
                 <label class="form-label">Mail Username</label>
                 <input type="text" name="MAIL_USERNAME" class="form-control" value="{{ $settings['MAIL_USERNAME'] ?? '' }}" required>
             </div>
             <div class="mb-3">
                 <label class="form-label">Mail Password / App Password</label>
-                <input type="password" name="MAIL_PASSWORD" class="form-control" placeholder="Kosongkan jika tidak ingin mengubah password" autocomplete="new-password" value="{{ $settings['MAIL_PASSWORD'] ?? '' }}">
+                <input type="password" name="MAIL_PASSWORD" class="form-control" placeholder="Kosongkan jika tidak ingin mengubah password" autocomplete="new-password">
                 <div class="form-text text-muted"><i class="bi bi-shield-lock-fill text-success"></i> Kata sandi Anda tersimpan dalam format terenkripsi (aman).</div>
             </div>
             <div class="mb-3">
