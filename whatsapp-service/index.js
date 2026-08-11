@@ -61,7 +61,7 @@ async function connectToWhatsApp() {
             auth: state,
             printQRInTerminal: true,
             logger: pino({ level: 'silent' }),
-            browser: Browsers.macOS('Desktop'),
+            browser: Browsers.ubuntu('Chrome'),
             connectTimeoutMs: 60000,
             qrTimeout: 60000,
         };
